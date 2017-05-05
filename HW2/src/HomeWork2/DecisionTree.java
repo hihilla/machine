@@ -77,10 +77,10 @@ public class DecisionTree implements Classifier {
     /**
      * calculates the information gain of splitting the input data according to 
      * the attribute.
-     * @param instance
+     * @param instances
      * @return The information gain 
      */
-    public double calcInfoGain(Instance instance){
+    public double calcInfoGain(Instances instances){
     	return 0;
     }
     /**
@@ -213,6 +213,18 @@ public class DecisionTree implements Classifier {
 		}
     	
     	return chiSquare;
+    }
+    
+    /**
+     * Prunning the tree by using Chi square test in order to decide whether 
+     * to prune a branch of the tree or not. We compare resulted Chi square
+     * with number from chi squared chart in the row for 8 degrees of freedom 
+     * (which is the number of attributes in the cancer data minus 1) and the 
+     * column for 0.95 confidence level
+     */
+    private void chiSquarePrunning(){
+    	double CHI_SQUARE_LIMIT = 15.51;
+    	
     }
     
     @Override
