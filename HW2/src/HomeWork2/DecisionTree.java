@@ -110,13 +110,11 @@ public class DecisionTree implements Classifier {
     			// after summing up all the "yes"s for every instance
     			// for the given attribute, calculates the probability
     			// and stores in the array
-    			probabilities[i] = numOfYes / numOfInstances;
+    			probabilities[i] = numOfYes / (double)numOfInstances;
     			numOfYes = 0; // zeros sum of "yes"s before next iteration
     		}
     	}
-    	
     	return probabilities;
-    	
     }
     
     
