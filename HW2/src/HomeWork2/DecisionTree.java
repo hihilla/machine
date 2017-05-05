@@ -88,10 +88,10 @@ public class DecisionTree implements Classifier {
      * preparation to calculate purity (entropy),
      * for every possible attribute
      *
-     * @param instances
-     * @return probabilities
+     * @param instances set of instances (in certain node, probably)
+     * @return probabilities of positive class (1) for each possible attribute
      */
-    public double[] calcProbabilities(Instances instances){
+    public double[] calcPositiveProbabilities(Instances instances){
     	int numOfAttributes = instances.numAttributes();
     	int numOfInstances = instances.numInstances();
     	int classIndex = instances.classIndex();
@@ -110,19 +110,18 @@ public class DecisionTree implements Classifier {
     			// after summing up all the "yes"s for every instance
     			// for the given attribute, calculates the probability
     			// and stores in the array
-    			probabilities[i] = numOfYes / numOfInstances;
+    			probabilities[i] = numOfYes / (double)numOfInstances;
     			numOfYes = 0; // zeros sum of "yes"s before next iteration
     		}
     	}
-    	
     	return probabilities;
-    	
     }
     
     
     /**
      * Calculates the entropy of a random variable where all the probabilities 
      * of all of the possible values it can take are given as input.
+     * 
      * @param probabilities - A set of probabilities
      * @return The entropy 
      */
