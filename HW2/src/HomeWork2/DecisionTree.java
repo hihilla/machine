@@ -5,8 +5,8 @@ import java.util.List;
 
 import weka.classifiers.Classifier;
 import weka.core.Capabilities;
-import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.Instance;
 
 class BasicRule {
     int attributeIndex;
@@ -58,7 +58,7 @@ public class DecisionTree implements Classifier {
      * queue algorithm.
      * @param instance
      */
-    public void buildTree(Instance instance) {
+    public void buildTree(Instances instances) {
     	
     }
     
@@ -83,6 +83,42 @@ public class DecisionTree implements Classifier {
     public double calcInfoGain(Instance instance){
     	return 0;
     }
+    /**
+     * Calculates, for set of instances, their probabilities  in
+     * preparation to calculate purity (entropy),
+     * for every possible attribute
+     *
+     * @param instances
+     * @return probabilities
+     */
+    public double[] calcProbabilities(Instances instances){
+    	int numOfAttributes = instances.numAttributes();
+    	int numOfInstances = instances.numInstances();
+    	int classIndex = instances.classIndex();
+    	int numOfYes = 0;
+    	double[] probabilities = new double[numOfAttributes];
+    	
+    	// runs on all possible attributes, as long as it's not the classIndex
+    	// and for each attribute sums the num of "yes"s (1)
+    	for (int i = 0; i < numOfAttributes; i++){
+    		if (i != classIndex){
+    			for (int j = 0; j < numOfInstances; j++){
+        			if (instances.instance(j).classValue() == 1){
+        				numOfYes++;
+        			}
+        		}
+    			// after summing up all the "yes"s for every instance
+    			// for the given attribute, calculates the probability
+    			// and stores in the array
+    			probabilities[i] = numOfYes / numOfInstances;
+    			numOfYes = 0; // zeros sum of "yes"s before next iteration
+    		}
+    	}
+    	
+    	return probabilities;
+    	
+    }
+    
     
     /**
      * Calculates the entropy of a random variable where all the probabilities 
@@ -91,6 +127,26 @@ public class DecisionTree implements Classifier {
      * @return The entropy 
      */
     public double calcEntropy(double[] probabilities){
+    	int numOfInstances = probabilities.length;
+    	double entropy;
+    	double probOfCurrEvent;
+    	double tempCalcSi0; // these are the NOs
+    	double tempCalcSi1; //these are the YESs - what is calculated directly in the given array
+    	
+    	// calculates 
+    	for (int i = 0; i < numOfInstances; i++){
+    		tempCalcSi1 = probabilities[i];
+    		entropy = ((tempCalcSi1 * (Math.log(tempCalcSi1) / Math.log(2.0))) 
+    					+ (probOfNo * (Math.log(probOfNo) / Math.log(2.0))));
+    	}
+    	
+    	
+    	//// calculates prob (using log tricks to assure base 2) according to given formula
+		//currAttributeProb = - ((probOfYes * (Math.log(probOfYes) / Math.log(2.0))) 
+			//	+ (probOfNo * (Math.log(probOfNo) / Math.log(2.0))));
+    	
+    	
+    	
     	return 0;
     }
     
