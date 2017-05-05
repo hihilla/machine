@@ -56,9 +56,9 @@ public class DecisionTree implements Classifier {
     /**
      * Builds the decision tree on given data set using either a recursive or 
      * queue algorithm.
-     * @param instance
+     * @param instances
      */
-    public void buildTree(Instance instance) {
+    public void buildTree(Instances instances) {
     	
     }
     
@@ -102,7 +102,62 @@ public class DecisionTree implements Classifier {
      * @return The chi square score
      */
     public double calcChiSquare(Instances instances, int attributeIndex){
-    	return 0;
+    	// xj is the attribute at index j (attributeIndex)
+    	int numValues = instances.attribute(attributeIndex).numValues();
+    	int numInstances = instances.numInstances();
+    	// number of instances for which attribute value at (j) = val(f)
+    	int numInstancesWithCurValue = 0;
+    	// Positives: number of instances for which (attVal=f) and (Y = 1)
+    	int numInstanceswithFAndPos = 0;
+    	// Negatives: number of instances for which (attVal=f) and (Y = 0)
+    	int numInstanceswithFAndNeg = 0;
+    	double posE, negE;
+    	double chiSquare = 0;
+    	
+    	// calculate number of positive and negative instances
+    	int numPositive = 0;
+    	int numNegative = 0;
+    	for (int i = 0; i < numInstances; i++) {
+    		Instance curInstance = instances.instance(i);
+    		if (curInstance.classValue() == 1) {
+    			numPositive ++;
+    		} else {
+    			numNegative ++;
+    		}
+    		
+    	}
+    	double Py0 = numNegative / (double) numInstances;
+    	double Py1 = numPositive / (double) numInstances;
+    	
+    	// going over all possible values
+    	for (int f = 0; f < numValues; f++) {
+			double tempCalc = 0;
+			// calculating number of instances which j attribute value is f
+			for (int i = 0; i < numInstances; i++) {
+				Instance curInstance = instances.instance(i);
+				if (curInstance.attribute(attributeIndex).value(f) == 
+						instances.attribute(attributeIndex).value(f)){
+					numInstancesWithCurValue++;
+					if (curInstance.classValue() == 1) {
+						numInstanceswithFAndPos++;
+					} else {
+						numInstanceswithFAndNeg++;
+					}
+				}
+			}
+			posE = numInstancesWithCurValue * Py1;
+			negE = numInstancesWithCurValue * Py0;
+			
+			// adding calculation to chi square
+			tempCalc = (Math.pow((numInstanceswithFAndPos - posE), 2) / posE) + 
+					(Math.pow((numInstanceswithFAndNeg - negE), 2) / negE);
+			chiSquare += tempCalc;
+			numInstancesWithCurValue = 0;
+			numInstanceswithFAndPos = 0;
+			numInstanceswithFAndNeg = 0;
+		}
+    	
+    	return chiSquare;
     }
     
     @Override
