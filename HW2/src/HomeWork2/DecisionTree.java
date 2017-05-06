@@ -37,6 +37,8 @@ public class DecisionTree implements Classifier {
 	private PruningMode m_pruningMode;
 	Instances validationSet;
 	private List<Rule> rules = new ArrayList<Rule>();
+	
+	private final double CHI_SQUARE_LIMIT = 15.51;
 
 	@Override
 	public void buildClassifier(Instances arg0) throws Exception {
@@ -167,6 +169,30 @@ public class DecisionTree implements Classifier {
 		
 		return entropy;
 	}
+	
+	/**
+	 * Generates a subset of instances for which the attribute value at 
+	 * attributeIndex is attributeValue. Meaning for every instance in subset 
+	 * the value at the given attribute is equal to the given value.
+	 * @param instances
+	 * @param attributeIndex
+	 * @param attributeValue
+	 * @return subset of instances
+	 */
+	private Instances generateSubsetInstances(Instances instances, int attributeIndex, double attributeValue) {
+		Instances subInstances = new Instances(instances);
+		int numInstances = instances.numInstances();
+		// removing instances with different value
+		for (int i = 0; i < numInstances; i++) {
+			Instance curInstance = subInstances.instance(i);
+			double curValue = curInstance.value(attributeIndex);
+			if (curValue != attributeValue) {
+				// value is not a match, removing from subset
+				subInstances.delete(i);
+			}
+		}
+		return subInstances;
+	}
 
 	/**
 	 * Calculates the chi square statistic of splitting the data according to
@@ -245,7 +271,7 @@ public class DecisionTree implements Classifier {
 	 * for 0.95 confidence level.
 	 */
 	private void chiSquarePrunning() {
-		double CHI_SQUARE_LIMIT = 15.51;
+		
 		// PAY ATTENTION – where you need to perform this test, what you should
 		// do if the result is to prune.
 		// TODO: implement this method
