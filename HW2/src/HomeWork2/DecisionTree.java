@@ -138,7 +138,7 @@ public class DecisionTree implements Classifier {
         //cell of the array by the number of possible values
         for (int i = 0; i < probabilities.length; i++){
             probabilities[i] = probabilities[i] / numValues;
-
+        }
 		return probabilities;
 	}
 
