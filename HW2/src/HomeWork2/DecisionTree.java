@@ -147,31 +147,25 @@ public class DecisionTree implements Classifier {
 	 * of all of the possible values it can take are given as input.
 	 * 
 	 * @param probabilities
-	 *            - A set of probabilities
-	 * @return The entropy
+	 *            - A set of probabilities for a certain attribute
+	 * @return entropy for this set of instances according to the attribute
 	 */
 	private double calcEntropy(double[] probabilities) {
-		int numOfInstances = probabilities.length;
-		double entropy;
-		double probOfCurrEvent;
-		double tempCalcSi0; // these are the NOs
-		double tempCalcSi1; // these are the YESs - what is calculated directly
-							// in the given array
-
-		// calculates
-		for (int i = 0; i < numOfInstances; i++) {
-			tempCalcSi1 = probabilities[i];
-			entropy = ((tempCalcSi1 * (Math.log(tempCalcSi1) / Math.log(2.0)))
-					+ (probOfNo * (Math.log(probOfNo) / Math.log(2.0))));
+		int numOfValues= probabilities.length;
+		//hold the current probability of a certain value
+		double tempValProb;
+		double entropy = 0;
+	
+		// calculates for every cell of the array its part of
+		// the entropy (the Sigma itself), and sums to entropy 
+		for (int i = 0; i < numOfValues; i++) {
+			if (probabilities[i] != 0){
+				tempValProb = probabilities[i];
+				entropy += (-1) * ((tempValProb * (Math.log(tempValProb) / Math.log(2.0))));
+			}
 		}
-
-		//// calculates prob (using log tricks to assure base 2) according to
-		//// given formula
-		// currAttributeProb = - ((probOfYes * (Math.log(probOfYes) /
-		//// Math.log(2.0)))
-		// + (probOfNo * (Math.log(probOfNo) / Math.log(2.0))));
-
-		return 0;
+		
+		return entropy;
 	}
 
 	/**
