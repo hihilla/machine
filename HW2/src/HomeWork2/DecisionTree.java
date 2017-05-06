@@ -105,17 +105,29 @@ public class DecisionTree implements Classifier {
 	 */
 	private double calcInfoGain(Instances instances, int attributeIndex) {
 		//total of all iterations of sigma
-		double Sigma;
+		double Sigma = 0;
 		//entropy of all of the instances (first part of formula)
 		double entropyS = calcEntropy(calcProbabilities(instances, attributeIndex));
 		//for every value i of the attribute, holds the inner part of sigma
-		double tempSigma;
+		//double tempSigma;
 		//the array of probabilities, to be used while calculate tempSigma
 		double[] probs = calcProbabilities(instances, attributeIndex);
+		//
+		double subsetEntropy;
 		
 		for (int i = 0; i < probs.length; i++){
-			tempSigma = probs[i] * instances.
+			//hold only instances that hold the value i of the given attribute
+			Instances subsetInstances = generateSubsetInstances(instances,
+										attributeIndex, i);
+			//calculates the entropy of the instances with value i
+			subsetEntropy = calcEntropy(calcProbabilities(subsetInstances,
+														attributeIndex));
+			// total inner sigma-the entropy of instances with value i * 
+			// probability of this value given its attribute
+			Sigma += subsetEntropy * probs[i];
 		}
+		
+		return (entropyS - Sigma);
 		
 		
 		
