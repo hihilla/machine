@@ -112,7 +112,9 @@ public class DecisionTree implements Classifier {
 	private Node buildTree(Instances instances) {
 		int numAttributes = instances.numAttributes();
 		int classIndex = instances.classIndex();
+		int numOfClasses = instances.attribute(classIndex).numValues();
 
+		// getting best attribute
 		int bestAttribute = findBestAttribute(instances, numAttributes);
 
 		// create children for the node
@@ -120,7 +122,7 @@ public class DecisionTree implements Classifier {
 		Node[] childs = new Node[numOfChildren];
 
 		// define node with bestAttribute as attributeIndex and give it the children		
-		BasicRule nodesRule = new BasicRule(bestAttribute, -1);
+//		BasicRule nodesRule = new BasicRule(bestAttribute, -1);
 		Node node = new Node(bestAttribute, childs);
 		
 		
@@ -140,20 +142,55 @@ public class DecisionTree implements Classifier {
 				childs[i].nodeRule.add(childRule);
 			} else {
 				// this child is a leaf!!
-				BasicRule childRule = new BasicRule(bestAttribute, i);
 				// find the returnValue for this leaf:
-				double returnValue;
+				int returnValue;
 				double[] instClasses = divideInstances[i].attributeToDoubleArray(classIndex);
 				if (instClasses == null || instClasses.length == 0) {
 					returnValue = 0;
+				} else {
+					returnValue = findMax(buildHistogram(instClasses, numOfClasses));
 				}
-//				childs[i] = new Node(returnValue, node)
-				
+				// set return value and parent for this leaf
+				childs[i] = new Node(returnValue, node);
 			}
+			BasicRule childRule = new BasicRule(bestAttribute, i);
+			childs[i].nodeRule.add(childRule);
 		}
 		return node;
 	}
+	
+	/**
+	 * Create a histogram from a given array with values in range [0 - size]
+	 * @param arr
+	 * @param size
+	 * @return histogram
+	 */
+	private int[] buildHistogram (double[] arr, int size) {
+		int[] histogram = new int[size];
+		for (int i = 0; i < histogram.length; i++) {
+			histogram[i] = 0;
+		}
+		for (int i = 0; i < arr.length; i++) {
+			histogram[(int) arr[i]]++;
+		}
+		return histogram;
+	}
 
+	/**
+	 * Find max value in given array
+	 * @param arr
+	 * @return the max value
+	 */
+	private int findMax(int[] arr){
+		int max = arr[0];
+		for (int i = 1; i < arr.length; i++) {
+			if (arr[i] > max) {
+				max = arr[i];
+			}
+		}
+		return max;
+	}
+	
 	/**
 	 * Calculate info gain for each attribute and find the attribute that 
 	 * gives min info gain
