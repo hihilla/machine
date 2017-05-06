@@ -103,15 +103,17 @@ public class DecisionTree implements Classifier {
 	private double calcInfoGain(Instances instances) {
 		return 0;
 	}
-
+	
 	/**
-	 * Calculates, for set of instances, their probabilities in preparation to
-	 * calculate purity (entropy), for every possible attribute
-	 *
-	 * @param instances
-	 *            set of instances (in certain node, probably)
-	 * @return probabilities of positive class (1) for each possible attribute
-	 */
+    * Calculates, for set of instances,
+    * their probabilities for all of possible values according to
+    * a given attribute
+    * @param instances set of instances
+    * @param attributeIndex attribute to check probs according to its possible
+    *             values
+    * @return array of double with all possible probabilities
+    */
+
     private double[] calcProbabilities(Instances instances, int attributeIndex){
         //number of possible values of the given attribute
         int numValues = instances.attribute(attributeIndex).numValues();
@@ -133,7 +135,7 @@ public class DecisionTree implements Classifier {
         }
         
         //puts the actual probabilities in the array be dividing each
-        //cell of the arrau by the numver of possible values
+        //cell of the array by the number of possible values
         for (int i = 0; i < probabilities.length; i++){
             probabilities[i] = probabilities[i] / numValues;
 
