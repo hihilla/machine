@@ -84,39 +84,40 @@ public class DecisionTree implements Classifier {
     	return 0;
     }
     /**
-     * Calculates, for set of instances, their probabilities  in
-     * preparation to calculate purity (entropy),
-     * for every possible attribute
-     *
-     * @param instances set of instances (in certain node, probably)
-     * @return probabilities of positive class (1) for each possible attribute
+     * Calculates, for set of instances,
+     * their probabilities for all of possible values according to
+     * a given attribute
+     * @param instances set of instances
+     * @param attributeIndex attribute to check probs accorfing to its possible
+     * 			values
+     * @return array of double with all possible paobabilities
      */
-    private double[] calcPositiveProbabilities(Instances instances){
-    	int numOfAttributes = instances.numAttributes();
-    	int numOfInstances = instances.numInstances();
-    	int classIndex = instances.classIndex();
-    	int numOfYes = 0;
-    	double[] probabilities = new double[numOfAttributes];
+    private double[] calcPositiveProbabilities(Instances instances, int attributeIndex){
+    	//number of possible values of the given attribute
+    	int numValues = instances.attribute(attributeIndex).numValues();
+    	//number of instances in the instances set
+    	int numInstances = instances.numInstances();  
+    	double[] probabilities = new double[numValues];
+
+    	//if there are no instances, returns an empty array
+    	if(numInstances < 1){
+    		return probabilities;
+    	}
     	
-    	// runs on all possible attributes, as long as it's not the classIndex
-    	// and for each attribute sums the num of "yes"s (1)
-    	for (int i = 0; i < numOfAttributes; i++){
-    		if (i != classIndex){
-    			for (int j = 0; j < numOfInstances; j++){
-        			if (instances.instance(j).classValue() == 1){
-        				numOfYes++;
-        			}
-        		}
-    			// after summing up all the "yes"s for every instance
-    			// for the given attribute, calculates the probability
-    			// and stores in the array
-    			probabilities[i] = numOfYes / (double)numOfInstances;
-    			numOfYes = 0; // zeros sum of "yes"s before next iteration
-    		}
+    	//goes through all instances and gets for each the value 
+    	//of the attribute, stores the info in the cell of the array
+    	//that corresponds to that possible value
+    	for (int i = 0; i < numInstances; i++){
+    		probabilities[(int) instances.instance(i).value(attributeIndex)]++;
+    	}
+    	
+    	//puts the actual probabilities in the array be dividing each
+    	//cell of the arrau by the numver of possible values
+    	for (int i = 0; i < probabilities.length; i++){
+    		probabilities[i] = probabilities[i] / numValues;
     	}
     	return probabilities;
     }
-    
     
     /**
      * Calculates the entropy of a random variable where all the probabilities 
@@ -143,8 +144,6 @@ public class DecisionTree implements Classifier {
     	//// calculates prob (using log tricks to assure base 2) according to given formula
 		//currAttributeProb = - ((probOfYes * (Math.log(probOfYes) / Math.log(2.0))) 
 			//	+ (probOfNo * (Math.log(probOfNo) / Math.log(2.0))));
-    	
-    	
     	
     	return 0;
     }
