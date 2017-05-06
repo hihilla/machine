@@ -159,11 +159,11 @@ public class DecisionTree implements Classifier {
 							// in the given array
 
 		// calculates
-		for (int i = 0; i < numOfInstances; i++) {
-			tempCalcSi1 = probabilities[i];
-			entropy = ((tempCalcSi1 * (Math.log(tempCalcSi1) / Math.log(2.0)))
-					+ (probOfNo * (Math.log(probOfNo) / Math.log(2.0))));
-		}
+		// for (int i = 0; i < numOfInstances; i++) {
+		// tempCalcSi1 = probabilities[i];
+		// entropy = ((tempCalcSi1 * (Math.log(tempCalcSi1) / Math.log(2.0)))
+		// + (probOfNo * (Math.log(probOfNo) / Math.log(2.0))));
+		// }
 
 		//// calculates prob (using log tricks to assure base 2) according to
 		//// given formula
@@ -196,31 +196,19 @@ public class DecisionTree implements Classifier {
 		double posE, negE;
 		double chiSquare = 0;
 
-		// calculate number of positive and negative instances
-		int numPositive = 0;
-		int numNegative = 0;
-		for (int i = 0; i < numInstances; i++) {
-			Instance curInstance = instances.instance(i);
-			if (curInstance.classValue() == 1) {
-				numPositive++;
-			} else {
-				numNegative++;
-			}
-
-		}
-		// TODO: this can be replaces with Adars calcProbabilities for
-		// attributeIndex = classIndex
 		// probability for classification (1/0)
-		double Py0 = numNegative / (double) numInstances;
-		double Py1 = numPositive / (double) numInstances;
+		double[] probabilitiesForClass = calcProbabilities(instances, instances.classIndex());
+		double Py0 = probabilitiesForClass[0];
+		double Py1 = probabilitiesForClass[1];
 
-		// going over all possible values
+		// going over all possible values for attribute at attributeIndex
 		for (int f = 0; f < numValues; f++) {
 			double tempCalc = 0;
 			// calculating number of instances which j attribute value is f
 			for (int i = 0; i < numInstances; i++) {
 				Instance curInstance = instances.instance(i);
-				if (curInstance.attribute(attributeIndex).value(f) == instances.attribute(attributeIndex).value(f)) {
+				if (curInstance.attribute(attributeIndex).value(f) == 
+						instances.attribute(attributeIndex).value(f)) {
 					numInstancesWithCurValue++;
 					if (curInstance.classValue() == 1) {
 						numInstanceswithFAndPos++;
