@@ -141,7 +141,7 @@ public class DecisionTree implements Classifier {
 				// this child is a leaf!!
 				// find the returnValue for this leaf:
 				int returnValue;
-				double[] instClasses = divideInstances[i].attributeToDoubleArray(classIndex);
+				double[] instClasses = instances.attributeToDoubleArray(classIndex);
 				if (instClasses == null || instClasses.length == 0) {
 					returnValue = 0;
 				} else {
