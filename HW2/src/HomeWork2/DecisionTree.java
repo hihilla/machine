@@ -35,10 +35,10 @@ class Node {
 	Rule nodeRule = new Rule();
 
 	// Construct a general child-less node
-	public Node(int attributeIndex, Node[] children) {
+	public Node(Node[] children) {
 		this.parent = null;
 		this.children = children;
-		this.attributeIndex = attributeIndex;
+		this.attributeIndex = -1;
 		this.returnValue = -1;
 	}
 	
@@ -112,7 +112,7 @@ public class DecisionTree implements Classifier {
 	private Node buildTree(Instances instances) {
 		int numAttributes = instances.numAttributes();
 		int classIndex = instances.classIndex();
-		int numOfClasses = instances.attribute(classIndex).numValues();
+		int numOfClassifications = instances.attribute(classIndex).numValues();
 
 		// getting best attribute
 		int bestAttribute = findBestAttribute(instances, numAttributes);
@@ -123,7 +123,7 @@ public class DecisionTree implements Classifier {
 
 		// define node with bestAttribute as attributeIndex and give it the children		
 //		BasicRule nodesRule = new BasicRule(bestAttribute, -1);
-		Node node = new Node(bestAttribute, childs);
+		Node node = new Node(childs);
 		
 		
 		// divide instances to children
@@ -137,9 +137,6 @@ public class DecisionTree implements Classifier {
 			if (divideInstances[i].numInstances() != 0) {
 				// building a tree for a child that has instances
 				childs[i] = buildTree(divideInstances[i]);
-				childs[i].parent = node;
-				BasicRule childRule = new BasicRule(bestAttribute, i);
-				childs[i].nodeRule.add(childRule);
 			} else {
 				// this child is a leaf!!
 				// find the returnValue for this leaf:
@@ -148,11 +145,13 @@ public class DecisionTree implements Classifier {
 				if (instClasses == null || instClasses.length == 0) {
 					returnValue = 0;
 				} else {
-					returnValue = findMax(buildHistogram(instClasses, numOfClasses));
+					returnValue = findMax(buildHistogram(instClasses, numOfClassifications));
 				}
 				// set return value and parent for this leaf
 				childs[i] = new Node(returnValue, node);
 			}
+			childs[i].parent = node;
+			childs[i].attributeIndex = bestAttribute;
 			BasicRule childRule = new BasicRule(bestAttribute, i);
 			childs[i].nodeRule.add(childRule);
 		}
