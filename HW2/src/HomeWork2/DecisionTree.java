@@ -95,12 +95,28 @@ public class DecisionTree implements Classifier {
 
 	/**
 	 * calculates the information gain of splitting the input data according to
-	 * the attribute.
+	 * the attribute
 	 * 
-	 * @param instances
-	 * @return The information gain
+	 * @param instances subset of instances to calc according to them the infoGain
+	 * @param attributeIndex the attribute to calc for the infoGain
+	 * @return
 	 */
-	private double calcInfoGain(Instances instances) {
+	private double calcInfoGain(Instances instances, int attributeIndex) {
+		//total of all iterations of sigma
+		double Sigma;
+		//entropy of all of the instances (first part of formula)
+		double entropyS = calcEntropy(calcProbabilities(instances, attributeIndex));
+		//for every value i of the attribute, holds the inner part of sigma
+		double tempSigma;
+		//the array of probabilities, to be used while calculate tempSigma
+		double[] probs = calcProbabilities(instances, attributeIndex);
+		
+		for (int i = 0; i < probs.length; i++){
+			tempSigma = probs[i] * instances.
+		}
+		
+		
+		
 		return 0;
 	}
 	
