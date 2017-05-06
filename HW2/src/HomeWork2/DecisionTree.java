@@ -1,12 +1,14 @@
 ﻿package HomeWork2;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import weka.classifiers.Classifier;
 import weka.core.Capabilities;
-import weka.core.Instances;
 import weka.core.Instance;
+import weka.core.Instances;
+import weka.core.pmml.jaxbbindings.CUMULATIVELINKFUNCTION;
 
 class BasicRule {
 	int attributeIndex;
@@ -43,8 +45,8 @@ class Node {
 	}
 	
 	// Construct a leaf node
-	public Node(int returnValue, Node parent) {
-		this.parent = parent;
+	public Node(int returnValue) {
+		this.parent = null;
 		this.returnValue = returnValue;
 		this.children = null;
 		this.attributeIndex = -1;
@@ -66,12 +68,13 @@ public class DecisionTree implements Classifier {
 
 	@Override
 	public void buildClassifier(Instances arg0) throws Exception {
-		// TODO: implement this method
-
 		// build a tree
+		rootNode = buildTree(arg0);
 		// go over it and find each nodes rule
+		
 		// do some prunning
 		// set the tree to this classObject....
+		
 	}
 
 	public void setPruningMode(PruningMode pruningMode) {
@@ -113,6 +116,20 @@ public class DecisionTree implements Classifier {
 		int numAttributes = instances.numAttributes();
 		int classIndex = instances.classIndex();
 		int numOfClassifications = instances.attribute(classIndex).numValues();
+		
+		if (sameAttributeValue(instances) || sameClassValue(instances)){
+			// all instances are getting same classification, this node is a leaf.
+			// find the returnValue for this leaf:
+			int returnValue;
+			double[] instClasses = instances.attributeToDoubleArray(classIndex);
+			if (instClasses == null || instClasses.length == 0) {
+				returnValue = 0;
+			} else {
+				returnValue = findMax(buildHistogram(instClasses, 
+													numOfClassifications));
+			}
+			return new Node(returnValue);
+		}
 
 		// getting best attribute
 		int bestAttribute = findBestAttribute(instances, numAttributes);
@@ -121,8 +138,7 @@ public class DecisionTree implements Classifier {
 		int numOfChildren = instances.attribute(bestAttribute).numValues();
 		Node[] childs = new Node[numOfChildren];
 
-		// define node with bestAttribute as attributeIndex and give it the children		
-//		BasicRule nodesRule = new BasicRule(bestAttribute, -1);
+		// define node with bestAttribute as attributeIndex and give it the children
 		Node node = new Node(childs);
 		
 		
@@ -145,10 +161,11 @@ public class DecisionTree implements Classifier {
 				if (instClasses == null || instClasses.length == 0) {
 					returnValue = 0;
 				} else {
-					returnValue = findMax(buildHistogram(instClasses, numOfClassifications));
+					returnValue = findMax(buildHistogram(instClasses, 
+														numOfClassifications));
 				}
 				// set return value and parent for this leaf
-				childs[i] = new Node(returnValue, node);
+				childs[i] = new Node(returnValue);
 			}
 			childs[i].parent = node;
 			childs[i].attributeIndex = bestAttribute;
@@ -156,6 +173,44 @@ public class DecisionTree implements Classifier {
 			childs[i].nodeRule.add(childRule);
 		}
 		return node;
+	}
+	
+	private boolean sameAttributeValue(Instances instances){
+		int numInstances = instances.numInstances();
+		int numAttribute = instances.numAttributes();
+
+		// going over all attributes and checking for same attribute values:
+		for (int i = 0; i < numAttribute; i++) {
+			Instance curInstance = instances.firstInstance();
+			double attributeValue = curInstance.value(0);
+			for (int j = 1; j < numInstances; j++) {
+				curInstance = instances.instance(i);
+				if (curInstance.value(j) != attributeValue) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
+	/**
+	 * Checking if all given instances has the same classification.
+	 * @param instances
+	 * @return true if all instances has the same classification.
+	 */
+	private boolean sameClassValue(Instances instances){
+		int numInstances = instances.numInstances();
+
+		// if all instances have the same classification:
+		Instance curInstance = instances.firstInstance();
+		double classValue = curInstance.classValue();
+		for (int i = 1; i < numInstances; i++) {
+			curInstance = instances.instance(i);
+			if (curInstance.classValue() != classValue) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	/**
