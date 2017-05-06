@@ -1,6 +1,7 @@
 ﻿package HomeWork2;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import weka.classifiers.Classifier;
@@ -90,18 +91,25 @@ public class DecisionTree implements Classifier {
 	 * @return instance's classification
 	 */
 	public double classifyInstance(Instance instance) {
-		//pointer to node while traverse from root to leaf
-		Node node = rootNode;
+		/*//pointer to the begging of a list
+		Iterator iterator = rules.iterator();
 		
-		//traverse through tree, each time goes to the child
-		//that holds the value of the instance for every attribute
-		//the instance "meets" along the way
-		while(node.children.length > 0){
-			node = node.children[(int) instance.value(node.attributeIndex)];
-		}
-		//reaches the end, returns the "final answer"
-		return node.returnValue;
-	}
+		//for each list of basic rules,
+		//traverse through the list, if reaches end of list,
+		//returns the classification of the last basic rule
+		//in that rule list
+		for (int i = 0; i < rules.size(); i++){
+			while(iterator.hasNext()){
+				iterator.next();
+			}
+			//reaches the end, returns the "final answer"
+			return ;
+
+			
+		} */
+		return 0;
+			}
+			
 
 	/**
 	 * Builds the decision tree on given data set using either a recursive or
@@ -122,7 +130,7 @@ public class DecisionTree implements Classifier {
 		Node[] childs = new Node[numOfChildren];
 
 		// define node with bestAttribute as attributeIndex and give it the children		
-//		BasicRule nodesRule = new BasicRule(bestAttribute, -1);
+		// BasicRule nodesRule = new BasicRule(bestAttribute, -1);
 		Node node = new Node(childs);
 		
 		
