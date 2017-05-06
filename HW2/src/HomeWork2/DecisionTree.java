@@ -85,9 +85,8 @@ public class DecisionTree implements Classifier {
 	@Override
 	/**
 	 * checks the classification of a single instance
-	 * 
-	 * @param instance for which function checks classifiction
-	 * 
+	 *
+	 * @param instance for which function checks classification 
 	 * @return instance's classification
 	 */
 	public double classifyInstance(Instance instance) {
