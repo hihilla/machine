@@ -66,7 +66,7 @@ public class DecisionTree implements Classifier {
 	 * @param instances
 	 */
 	private void buildTree(Instances instances) {
-
+		// TODO: implement this method
 	}
 
 	/**
@@ -248,7 +248,7 @@ public class DecisionTree implements Classifier {
 		double CHI_SQUARE_LIMIT = 15.51;
 		// PAY ATTENTION – where you need to perform this test, what you should
 		// do if the result is to prune.
-
+		// TODO: implement this method
 	}
 
 	/**
@@ -264,7 +264,7 @@ public class DecisionTree implements Classifier {
 	private void rulePrunning(Instances validationSet) {
 		// PAY ATTENTION – for how you loops over the rule, how you remove rules
 		// during this loop, how you decide to stop.
-
+		// TODO: implement this method
 	}
 
 	@Override
