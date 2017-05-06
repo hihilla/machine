@@ -112,12 +112,83 @@ public class DecisionTree implements Classifier {
 				// the instance applies the Rule, return appropriate return Value.
 				return curRule.returnValue;
 			}
-			
-			// instance does not purely applies any Rule.
-			// need to fine a best matched rule.
 		}
 		
-		return 0;
+		// instance does not purely applies any Rule.
+		// need to fine a best matched rule.
+		// if more then one rule has the same number of consecutive met conditions
+		// insert it to the suitableRules array and choose from there.
+		Rule mostSuitableRule = this.rules.get(0);
+		List<Rule> suitableRules = new ArrayList<Rule>();
+		int largestNumOfConsecutiveConditions = 0; 
+		boolean moreThenOneRule = false;
+		for (int i = 0; i < numRules; i++) {
+			boolean applyRule = true;
+			Rule curRule = this.rules.get(i);
+			int curConsecutiveCondition = 0;
+			numBasicRules = curRule.basicRule.size();
+			for (int j = 0; j < numBasicRules && applyRule; j++) {
+				BasicRule curBasicRule = curRule.basicRule.get(j);
+				if (curBasicRule.attributeValue != instance.value(curBasicRule.attributeIndex)){
+					applyRule = false; // Stop and continue to next Rule.
+				} else {
+					// count this Rules consecutive conditions
+					curConsecutiveCondition++;
+				}
+			}
+			if (curConsecutiveCondition > largestNumOfConsecutiveConditions) {
+				// this Rule is better then last one!
+				// saving this Rule and deleting previous data
+				moreThenOneRule = false;
+				largestNumOfConsecutiveConditions = curConsecutiveCondition;
+				mostSuitableRule = curRule;
+				suitableRules = new ArrayList<Rule>();
+			} else if (curConsecutiveCondition == largestNumOfConsecutiveConditions) {
+				// same number of consecutive conditions as a previous Rule
+				// adding this Rule to list of Rules
+				moreThenOneRule = true;
+				suitableRules.add(curRule);
+			}
+		}
+		if (moreThenOneRule) {
+			// there are more than one rule with the largest number from the previous step 
+			// classify with the majority of the returning values of those rules
+			int numOfRules = suitableRules.size();
+			int minNumOfRules = Integer.MAX_VALUE;
+			mostSuitableRule = suitableRules.get(0);
+			int numOfRulesToEnd = 0;
+			for (int i = 0; i < numOfRules; i++) {
+				Rule curRule = suitableRules.get(i);
+				numOfRulesToEnd = 0;
+				// iterating over Rule until meeting an unfulfilled basic rule
+				boolean meetRule = true;
+				BasicRule curBasicRule = curRule.basicRule.get(0);
+				for (int j = 0; j < curRule.basicRule.size() && meetRule; j++) {
+					curBasicRule = curRule.basicRule.get(i);
+					if (curBasicRule.attributeValue != instance.value(curBasicRule.attributeIndex)){
+						// an unfulfilled basic rule met!
+						meetRule = false;
+					}
+				}
+				// curBasicRule is the unfulfilled basic rule
+				// count number of basic rules until the end of this Rule
+				for (int j = curRule.basicRule.indexOf(curBasicRule); j < curRule.basicRule.size(); j++) {
+					numOfRulesToEnd++;
+				}
+				if (numOfRulesToEnd < minNumOfRules) {
+					// if this Rule is closer to the end (to a leaf) then the previous 
+					// best rule, keep it (to return at the end)
+					numOfRulesToEnd = minNumOfRules;
+					mostSuitableRule = curRule;
+				}	
+			}
+			// mostSuitableRule is the best rule - has the shortest path to a leaf
+			// among other rules that has the same number of consecutive met conditions
+			return mostSuitableRule.returnValue;
+		} else {
+			// returning the rule that meets the largest number of consecutive conditions
+			return mostSuitableRule.returnValue;
+		}
 	}
 
 	/**
@@ -459,7 +530,8 @@ public class DecisionTree implements Classifier {
 			// calculating number of instances which j attribute value is f
 			for (int i = 0; i < numInstances; i++) {
 				Instance curInstance = instances.instance(i);
-				if (curInstance.attribute(attributeIndex).value(f) == instances.attribute(attributeIndex).value(f)) {
+				if (curInstance.attribute(attributeIndex).value(f) == 
+						instances.attribute(attributeIndex).value(f)) {
 					numInstancesWithCurValue++;
 					if (curInstance.classValue() == 1) {
 						numInstanceswithFAndPos++;
