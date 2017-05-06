@@ -1,14 +1,12 @@
 ﻿package HomeWork2;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import weka.classifiers.Classifier;
 import weka.core.Capabilities;
 import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.pmml.jaxbbindings.CUMULATIVELINKFUNCTION;
 
 class BasicRule {
 	int attributeIndex;
