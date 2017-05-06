@@ -39,6 +39,7 @@ class Node {
 		this.returnValue = returnValue;
 		this.children = null;
 		this.attributeIndex = -1;
+		
 	}
 }
 
@@ -88,7 +89,8 @@ public class DecisionTree implements Classifier {
 	private Node buildTree(Instances instances) {
 		int numAttributes = instances.numAttributes();
 
-		// find best attribute
+		// find best attribute: calculate info gain for each attribute
+		// and find the attribute that gives min info gain
 		int bestAttribute = 0;
 		double goodInfoGain = calcInfoGain(instances, 0);
 		for (int i = 1; i < numAttributes; i++) {
@@ -102,6 +104,9 @@ public class DecisionTree implements Classifier {
 		// create children for the node
 		int numOfChildren = instances.attribute(bestAttribute).numValues();
 		Node[] childs = new Node[numOfChildren];
+
+		// define node with bestAttribute as attributeIndex and give it the children
+		Node node = new Node(bestAttribute, childs);
 		
 		// divide instances to children
 		Instances[] divideInstances = new Instances[numOfChildren];
@@ -119,8 +124,6 @@ public class DecisionTree implements Classifier {
 //				childs[i] = new Node(returnValue, node)
 			}
 		}
-		// define node with bestAttribute as attributeIndex and give it the children
-		Node node = new Node(bestAttribute, childs);
 
 	}
 
