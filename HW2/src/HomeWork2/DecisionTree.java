@@ -37,6 +37,8 @@ public class DecisionTree implements Classifier {
 	private PruningMode m_pruningMode;
 	Instances validationSet;
 	private List<Rule> rules = new ArrayList<Rule>();
+	
+	private final double CHI_SQUARE_LIMIT = 15.51;
 
 	@Override
 	public void buildClassifier(Instances arg0) throws Exception {
@@ -66,7 +68,7 @@ public class DecisionTree implements Classifier {
 	 * @param instances
 	 */
 	private void buildTree(Instances instances) {
-
+		// TODO: implement this method
 	}
 
 	/**
@@ -167,9 +169,9 @@ public class DecisionTree implements Classifier {
 	 * @return entropy for this set of instances according to the attribute
 	 */
 	private double calcEntropy(double[] probabilities) {
-		int numOfValues= probabilities.length;
 		//hold the current probability of a certain value
 		double tempValProb;
+		int numOfValues= probabilities.length;
 		double entropy = 0;
 	
 		// calculates for every cell of the array its part of
@@ -182,6 +184,30 @@ public class DecisionTree implements Classifier {
 		}
 		
 		return entropy;
+	}
+	
+	/**
+	 * Generates a subset of instances for which the attribute value at 
+	 * attributeIndex is attributeValue. Meaning for every instance in subset 
+	 * the value at the given attribute is equal to the given value.
+	 * @param instances
+	 * @param attributeIndex
+	 * @param attributeValue
+	 * @return subset of instances
+	 */
+	private Instances generateSubsetInstances(Instances instances, int attributeIndex, double attributeValue) {
+		Instances subInstances = new Instances(instances);
+		int numInstances = instances.numInstances();
+		// removing instances with different value
+		for (int i = 0; i < numInstances; i++) {
+			Instance curInstance = subInstances.instance(i);
+			double curValue = curInstance.value(attributeIndex);
+			if (curValue != attributeValue) {
+				// value is not a match, removing from subset
+				subInstances.delete(i);
+			}
+		}
+		return subInstances;
 	}
 
 	/**
@@ -206,31 +232,19 @@ public class DecisionTree implements Classifier {
 		double posE, negE;
 		double chiSquare = 0;
 
-		// calculate number of positive and negative instances
-		int numPositive = 0;
-		int numNegative = 0;
-		for (int i = 0; i < numInstances; i++) {
-			Instance curInstance = instances.instance(i);
-			if (curInstance.classValue() == 1) {
-				numPositive++;
-			} else {
-				numNegative++;
-			}
-
-		}
-		// TODO: this can be replaces with Adars calcProbabilities for
-		// attributeIndex = classIndex
 		// probability for classification (1/0)
-		double Py0 = numNegative / (double) numInstances;
-		double Py1 = numPositive / (double) numInstances;
+		double[] probabilitiesForClass = calcProbabilities(instances, instances.classIndex());
+		double Py0 = probabilitiesForClass[0];
+		double Py1 = probabilitiesForClass[1];
 
-		// going over all possible values
+		// going over all possible values for attribute at attributeIndex
 		for (int f = 0; f < numValues; f++) {
 			double tempCalc = 0;
 			// calculating number of instances which j attribute value is f
 			for (int i = 0; i < numInstances; i++) {
 				Instance curInstance = instances.instance(i);
-				if (curInstance.attribute(attributeIndex).value(f) == instances.attribute(attributeIndex).value(f)) {
+				if (curInstance.attribute(attributeIndex).value(f) == 
+						instances.attribute(attributeIndex).value(f)) {
 					numInstancesWithCurValue++;
 					if (curInstance.classValue() == 1) {
 						numInstanceswithFAndPos++;
@@ -273,10 +287,10 @@ public class DecisionTree implements Classifier {
 	 * for 0.95 confidence level.
 	 */
 	private void chiSquarePrunning() {
-		double CHI_SQUARE_LIMIT = 15.51;
+		
 		// PAY ATTENTION – where you need to perform this test, what you should
 		// do if the result is to prune.
-
+		// TODO: implement this method
 	}
 
 	/**
@@ -292,7 +306,7 @@ public class DecisionTree implements Classifier {
 	private void rulePrunning(Instances validationSet) {
 		// PAY ATTENTION – for how you loops over the rule, how you remove rules
 		// during this loop, how you decide to stop.
-
+		// TODO: implement this method
 	}
 
 	@Override
