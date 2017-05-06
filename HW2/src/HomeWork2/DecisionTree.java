@@ -11,11 +11,20 @@ import weka.core.Instance;
 class BasicRule {
 	int attributeIndex;
 	int attributeValue;
+	
+	public BasicRule(int index, int value) {
+		this.attributeIndex = index;
+		this.attributeValue = value;
+	}
 }
 
 class Rule {
 	List<BasicRule> basicRule;
 	double returnValue;
+	
+	public void add(BasicRule bRule) {
+		basicRule.add(bRule);
+	}
 }
 
 class Node {
@@ -39,7 +48,6 @@ class Node {
 		this.returnValue = returnValue;
 		this.children = null;
 		this.attributeIndex = -1;
-		
 	}
 }
 
@@ -88,25 +96,18 @@ public class DecisionTree implements Classifier {
 	 */
 	private Node buildTree(Instances instances) {
 		int numAttributes = instances.numAttributes();
+		int classIndex = instances.classIndex();
 
-		// find best attribute: calculate info gain for each attribute
-		// and find the attribute that gives min info gain
-		int bestAttribute = 0;
-		double goodInfoGain = calcInfoGain(instances, 0);
-		for (int i = 1; i < numAttributes; i++) {
-			double tempInfoGain = calcInfoGain(instances, i);
-			if (tempInfoGain < goodInfoGain) {
-				goodInfoGain = tempInfoGain;
-				bestAttribute = i;
-			}
-		}
+		int bestAttribute = findBestAttribute(instances, numAttributes);
 
 		// create children for the node
 		int numOfChildren = instances.attribute(bestAttribute).numValues();
 		Node[] childs = new Node[numOfChildren];
 
-		// define node with bestAttribute as attributeIndex and give it the children
+		// define node with bestAttribute as attributeIndex and give it the children		
+		BasicRule nodesRule = new BasicRule(bestAttribute, -1);
 		Node node = new Node(bestAttribute, childs);
+		
 		
 		// divide instances to children
 		Instances[] divideInstances = new Instances[numOfChildren];
@@ -119,12 +120,43 @@ public class DecisionTree implements Classifier {
 			if (divideInstances[i].numInstances() != 0) {
 				// building a tree for a child that has instances
 				childs[i] = buildTree(divideInstances[i]);
+				childs[i].parent = node;
+				BasicRule childRule = new BasicRule(bestAttribute, i);
+				childs[i].nodeRule.add(childRule);
 			} else {
 				// this child is a leaf!!
+				BasicRule childRule = new BasicRule(bestAttribute, i);
+				// find the returnValue for this leaf:
+				double returnValue;
+				double[] instClasses = divideInstances[i].attributeToDoubleArray(classIndex);
+				if (instClasses == null || instClasses.length == 0) {
+					returnValue = 0;
+				}
 //				childs[i] = new Node(returnValue, node)
+				
 			}
 		}
+		return node;
+	}
 
+	/**
+	 * Calculate info gain for each attribute and find the attribute that 
+	 * gives min info gain
+	 * @param instances
+	 * @param numAttributes
+	 * @return
+	 */
+	private int findBestAttribute(Instances instances, int numAttributes) {
+		int bestAttribute = 0;
+		double goodInfoGain = calcInfoGain(instances, 0);
+		for (int i = 1; i < numAttributes; i++) {
+			double tempInfoGain = calcInfoGain(instances, i);
+			if (tempInfoGain < goodInfoGain) {
+				goodInfoGain = tempInfoGain;
+				bestAttribute = i;
+			}
+		}
+		return bestAttribute;
 	}
 
 	/**
