@@ -75,11 +75,22 @@ public class DecisionTree implements Classifier {
 	 * classification mistakes on the input instances set and divides that by
 	 * the number of instances in the input set.
 	 * 
-	 * @param instance
+	 * @param instances
 	 * @return Average error
 	 */
-	private double calcAvgError(Instance instance) {
-		return 0;
+	public double calcAvgError(Instances instances) {
+		double error = 0;
+		double numMistake = 0;
+		int numInstances = instances.numInstances();
+		for (int i = 0; i < numInstances; i++) {
+			Instance curInstance = instances.instance(i);
+			// if real value differs from predicted value, its a mistake!
+			if (curInstance.classValue() != classifyInstance(curInstance)){
+				numMistake++;
+			}
+		}
+		error = numMistake / (double) numInstances;
+		return error;
 	}
 
 	/**
@@ -237,7 +248,6 @@ public class DecisionTree implements Classifier {
 			numInstanceswithFAndPos = 0;
 			numInstanceswithFAndNeg = 0;
 		}
-
 		return chiSquare;
 	}
 
