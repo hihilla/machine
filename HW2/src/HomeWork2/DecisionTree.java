@@ -93,25 +93,34 @@ public class DecisionTree implements Classifier {
 	 * @return instance's classification
 	 */
 	public double classifyInstance(Instance instance) {
-		/*//pointer to the begging of a list
-		Iterator iterator = rules.iterator();
+		int numRules = this.rules.size();
+		int numBasicRules;
 		
-		//for each list of basic rules,
-		//traverse through the list, if reaches end of list,
-		//returns the classification of the last basic rule
-		//in that rule list
-		for (int i = 0; i < rules.size(); i++){
-			while(iterator.hasNext()){
-				iterator.next();
+		// Trying to find a Rule that applies. 
+		// If not applying a basic rule in the current Rule, 
+		// stop with this Rule and continue to next Rule.
+		for (int i = 0; i < numRules; i++) {
+			Rule curRule = this.rules.get(i);
+			boolean applyRule = true;
+			numBasicRules = curRule.basicRule.size();
+			for (int j = 0; j < numBasicRules && applyRule; j++) {
+				BasicRule curBasicRule = curRule.basicRule.get(j);
+				if (curBasicRule.attributeValue != instance.value(curBasicRule.attributeIndex)){
+					applyRule = false; // Stop and continue to next Rule.
+				}
 			}
-			//reaches the end, returns the "final answer"
-			return ;
-
+			if (applyRule) {
+				// if after checking all basic rules in the Rule applyRule is true,
+				// the instance applies the Rule, return appropriate return Value.
+				return curRule.returnValue;
+			}
 			
-		} */
+			// instance does not purely applies any Rule.
+			// need to fine a best matched rule.
+		}
+		
 		return 0;
-			}
-			
+	}
 
 	/**
 	 * Builds the decision tree on given data set using either a recursive or
