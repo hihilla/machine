@@ -483,7 +483,7 @@ public class DecisionTree implements Classifier {
 	}
 
 	/**
-	 * Prunning the tree by checking if removing a rule improve the result.
+	 * Pruning the tree by checking if removing a rule improve the result.
 	 * After complete building the tree you will go over all the rules and check
 	 * if removing a rule will improve the error on the validation set. Pick the
 	 * best rule to remove according to the error on the validation set and
