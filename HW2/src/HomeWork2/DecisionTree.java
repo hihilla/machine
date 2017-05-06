@@ -83,9 +83,25 @@ public class DecisionTree implements Classifier {
 	}
 
 	@Override
+	/**
+	 * checks the classification of a single instance
+	 * 
+	 * @param instance for which function checks classifiction
+	 * 
+	 * @return instance's classification
+	 */
 	public double classifyInstance(Instance instance) {
-		// TODO: implement this method
-		return 0;
+		//pointer to node while traverse from root to leaf
+		Node node = rootNode;
+		
+		//traverse through tree, each time goes to the child
+		//that holds the value of the instance for every attribute
+		//the instance "meets" along the way
+		while(node.children.length > 0){
+			node = node.children[(int) instance.value(node.attributeIndex)];
+		}
+		//reaches the end, returns the "final answer"
+		return node.returnValue;
 	}
 
 	/**
