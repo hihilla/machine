@@ -355,7 +355,7 @@ public class DecisionTree implements Classifier {
 		int numInstances = instances.numInstances();
 		double[] probabilities = new double[numValues];
 
-		// if there are no instances, returns an empty array
+		// if there are no instances, returns meaningless array
 		if (numInstances < 1) {
 			return probabilities;
 		}
