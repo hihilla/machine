@@ -125,6 +125,7 @@ public class DecisionTree implements Classifier {
 			// total inner sigma-the entropy of instances with value i * 
 			// probability of this value given its attribute
 			Sigma += subsetEntropy * probs[i];
+			//delete comment
 		}
 		
 		return (entropyS - Sigma);
