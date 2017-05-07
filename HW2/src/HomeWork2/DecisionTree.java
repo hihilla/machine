@@ -68,7 +68,11 @@ public class DecisionTree implements Classifier {
 	public void buildClassifier(Instances arg0) throws Exception {
 		// build a tree
 		rootNode = buildTree(arg0);
-		// go over it and find each nodes rule
+		// go over it and find each Rules returnValue
+		int numOfRules = this.rules.size();
+		for (int i = 0; i < numOfRules; i++) {
+			rules.get(i).returnValue = findReturnValue(arg0);
+		}
 		
 		// do some prunning
 		// set the tree to this classObject....
@@ -89,14 +93,7 @@ public class DecisionTree implements Classifier {
 		if (sameAttributeValue(instances) || sameClassValue(instances)){
 			// all instances are getting same classification, this node is a leaf.
 			// find the returnValue for this leaf:
-			int returnValue;
-			double[] instClasses = instances.attributeToDoubleArray(classIndex);
-			if (instClasses == null || instClasses.length == 0) {
-				returnValue = 0;
-			} else {
-				returnValue = findMax(buildHistogram(instClasses, 
-													numOfClassifications));
-			}
+			int returnValue = findReturnValue(instances);
 			return new Node(returnValue);
 		}
 	
@@ -123,16 +120,8 @@ public class DecisionTree implements Classifier {
 				// building a tree for a child that has instances
 				childs[i] = buildTree(divideInstances[i]);
 			} else {
-				// this child is a leaf!!
 				// find the returnValue for this leaf:
-				int returnValue;
-				double[] instClasses = instances.attributeToDoubleArray(classIndex);
-				if (instClasses == null || instClasses.length == 0) {
-					returnValue = 0;
-				} else {
-					returnValue = findMax(buildHistogram(instClasses, 
-														numOfClassifications));
-				}
+				int returnValue = findReturnValue(instances);
 				// set return value and parent for this leaf
 				childs[i] = new Node(returnValue);
 			}
@@ -142,6 +131,27 @@ public class DecisionTree implements Classifier {
 			childs[i].nodeRule.add(childRule);
 		}
 		return node;
+	}
+
+	/**
+	 * Find the return value according to given subset of instances
+	 * @param instances
+	 * @param classIndex
+	 * @param numOfClassifications
+	 * @return
+	 */
+	private int findReturnValue(Instances instances) {
+		int classIndex = instances.classIndex();
+		int numOfClassifications = instances.attribute(classIndex).numValues();
+		int returnValue;
+		double[] instClasses = instances.attributeToDoubleArray(classIndex);
+		if (instClasses == null || instClasses.length == 0) {
+			returnValue = 0;
+		} else {
+			returnValue = findMax(buildHistogram(instClasses, 
+												numOfClassifications));
+		}
+		return returnValue;
 	}
 
 	/**
