@@ -144,11 +144,15 @@ public class DecisionTree implements Classifier {
 		int classIndex = instances.classIndex();
 		int numOfClassifications = instances.attribute(classIndex).numValues();
 		int returnValue;
-		double[] instClasses = instances.attributeToDoubleArray(classIndex);
-		if (instClasses == null || instClasses.length == 0) {
+		// creating an array of size (number of instances), each cell i states the
+		// classification of instance i
+		double[] instancesClassifications = instances.attributeToDoubleArray(classIndex);
+		if (instancesClassifications == null || instancesClassifications.length == 0) {
 			returnValue = 0;
 		} else {
-			returnValue = findMax(buildHistogram(instClasses, 
+			// counting number of appearances for each classification and finding the
+			// classification that appears the most (max number of appearances)
+			returnValue = findMax(buildHistogram(instancesClassifications, 
 												numOfClassifications));
 		}
 		return returnValue;
