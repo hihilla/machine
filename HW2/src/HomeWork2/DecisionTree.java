@@ -366,7 +366,7 @@ public class DecisionTree implements Classifier {
 		// of the attribute, stores the info in the cell of the array
 		// that corresponds to that possible value
 		for (int i = 0; i < numInstances; i++) {
-			probabilities[(int) instances.instance(i).value(attributeIndex)]++;
+			probabilities[(int) instances.instance(i).value(attributeIndex)]++;//SHOULD BE CLASS INDEX
 		}
 
 		// puts the actual probabilities in the array be dividing each
@@ -524,6 +524,8 @@ public class DecisionTree implements Classifier {
 		// PAY ATTENTION – for how you loops over the rule, how you remove rules
 		// during this loop, how you decide to stop.
 		// TODO: implement this method
+		
+		
 	}
 
 	@Override
