@@ -88,7 +88,7 @@ public class DecisionTree implements Classifier {
 	private Node buildTree(Instances instances) {
 		int numAttributes = instances.numAttributes();
 		int classIndex = instances.classIndex();
-		int numOfClassifications = instances.attribute(classIndex).numValues();
+		int numOfClassifications = instances.numClasses();
 		
 		if (sameAttributeValue(instances) || sameClassValue(instances)){
 			// all instances are getting same classification, this node is a leaf.
@@ -142,13 +142,17 @@ public class DecisionTree implements Classifier {
 	 */
 	private int findReturnValue(Instances instances) {
 		int classIndex = instances.classIndex();
-		int numOfClassifications = instances.attribute(classIndex).numValues();
+		int numOfClassifications = instances.numClasses();
 		int returnValue;
-		double[] instClasses = instances.attributeToDoubleArray(classIndex);
-		if (instClasses == null || instClasses.length == 0) {
+		// creating an array of size (number of instances), each cell i states the
+		// classification of instance i
+		double[] instancesClassifications = instances.attributeToDoubleArray(classIndex);
+		if (instancesClassifications == null || instancesClassifications.length == 0) {
 			returnValue = 0;
 		} else {
-			returnValue = findMax(buildHistogram(instClasses, 
+			// counting number of appearances for each classification and finding the
+			// classification that appears the most (max number of appearances)
+			returnValue = findMax(buildHistogram(instancesClassifications, 
 												numOfClassifications));
 		}
 		return returnValue;
@@ -452,10 +456,9 @@ public class DecisionTree implements Classifier {
 	 * for 0.95 confidence level.
 	 */
 	private void chiSquarePrunning() {
-	
 		// PAY ATTENTION – where you need to perform this test, what you should
 		// do if the result is to prune.
-		// TODO: implement this method
+		
 	}
 
 	/**
