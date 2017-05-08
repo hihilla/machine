@@ -129,6 +129,10 @@ public class DecisionTree implements Classifier {
 		}
 		return node;
 	}
+	
+	private void findAllRules() {
+		// TODO: go over tree and collect the rules!
+	}
 
 	/**
 	 * Find the return value according to given subset of instances
@@ -382,7 +386,7 @@ public class DecisionTree implements Classifier {
 	 * 
 	 * @param instances
 	 *            - a subset of the training data
-	 * @param attributeIndex
+	 * @param attributeIndex - should be class index
 	 * @return The chi square score
 	 */
 	private double calcChiSquare(Instances instances, int attributeIndex) {
@@ -446,6 +450,27 @@ public class DecisionTree implements Classifier {
 	}
 
 	/**
+	 * Iterate over the tree using a recursive function and returning all leafs
+	 * @return all leafs in the decision tree
+	 */
+	private Node[] findAllLeafs() {
+		List<Node> lst = recFindAllLeafs(this.rootNode);		
+		return (Node[]) lst.toArray();
+	}
+	
+	private List<Node> recFindAllLeafs(Node node) {
+		List<Node> lst = new ArrayList<Node>();
+		if (node.children.length == 0) {
+			lst.add(node);
+			return lst;
+		}
+		for (int i = 0; i < node.children.length; i++) {
+			lst.addAll(recFindAllLeafs(node.children[i]));
+		}
+		return lst;
+	}
+	
+	/**
 	 * Prunning the tree by using Chi square test in order to decide whether to
 	 * prune a branch of the tree or not. We compare resulted Chi square with
 	 * number from chi squared chart in the row for 8 degrees of freedom (which
@@ -455,7 +480,59 @@ public class DecisionTree implements Classifier {
 	private void chiSquarePrunning() {
 		// PAY ATTENTION – where you need to perform this test, what you should
 		// do if the result is to prune.
-		
+		Node[] leafs = findAllLeafs();
+		int numOfLeafs = leafs.length;
+		double chiSquare = Double.MIN_VALUE;
+		// continue pruning while chiSquare is not 95% confidence 
+		while (chiSquare < CHI_SQUARE_LIMIT) {
+			Node bestLeaf = leafs[0];
+			double bestChi = Double.MIN_VALUE;
+			// iterating over leafs. take out the leaf with largest chi square.
+			for (int i = 0; i < numOfLeafs; i++) {
+				DecisionTree tempTree = new DecisionTree();
+				try {
+					// simulate the prune of this leaf and check for chi square
+					tempTree.buildTree(validationSet);
+					tempTree.removeNode(leafs[i]);
+					double curChi = tempTree.calcChiSquare(validationSet, i);
+					if (curChi > bestChi) {
+						// prune this leaf!!!
+						bestLeaf = leafs[i];
+						bestChi = curChi;
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			// taking out leaf with best chi square
+			this.removeNode(bestLeaf);
+		}
+		// now chi square is at 95% confidence with 8 degrees of freedom
+		// now re-finding rules	and return values
+		// go over tree and find each Rules returnValue
+		int numOfRules = this.rules.size();
+		for (int i = 0; i < numOfRules; i++) {
+			rules.get(i).returnValue = findReturnValue(validationSet);
+		}
+	}
+	
+	private void removeNode(Node node) {
+		Node parent = node.parent;
+		Node[] siblings = parent.children;
+		Node[] childs = node.children;
+		Node[] newChildres = new Node[siblings.length + childs.length - 1];
+		for (int i = 0; i < childs.length; i++) {
+			newChildres[i] = childs[i];
+		}
+		int j = 0;
+		for (int i = childs.length; i < newChildres.length; i++, j++) {
+			if (siblings[j] != node) {
+				newChildres[i] = childs[j];
+			}
+		}
+		parent.children = newChildres;
+		node.parent = null;
 	}
 
 	/**
