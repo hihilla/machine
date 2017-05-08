@@ -263,12 +263,14 @@ public class DecisionTree implements Classifier {
 	private double calcInfoGain(Instances instances, int attributeIndex) {
 		// total of all iterations of sigma
 		double Sigma = 0;
+		//class index...
+		double classIndex = instances.classIndex();
 		// entropy of all of the instances (first part of formula)
-		double entropyS = calcEntropy(calcProbabilities(instances, attributeIndex));
+		double entropyS = calcEntropy(calcProbabilities(instances));
 		// for every value i of the attribute, holds the inner part of sigma
 		// double tempSigma;
 		// the array of probabilities, to be used while calculate tempSigma
-		double[] probs = calcProbabilities(instances, attributeIndex);
+		double[] probs = calcProbabilities(instances);
 		//
 		double subsetEntropy;
 	
@@ -276,7 +278,7 @@ public class DecisionTree implements Classifier {
 			// hold only instances that hold the value i of the given attribute
 			Instances subsetInstances = generateSubsetInstances(instances, attributeIndex, i);
 			// calculates the entropy of the instances with value i
-			subsetEntropy = calcEntropy(calcProbabilities(subsetInstances, attributeIndex));
+			subsetEntropy = calcEntropy(calcProbabilities(subsetInstances));
 			// total inner sigma-the entropy of instances with value i *
 			// probability of this value given its attribute
 			Sigma += subsetEntropy * probs[i];
@@ -321,9 +323,9 @@ public class DecisionTree implements Classifier {
 	 * @return array of double with all possible probabilities
 	 */
 	
-	private double[] calcProbabilities(Instances instances, int attributeIndex) {
-		// number of possible values of the given attribute
-		int numValues = instances.attribute(attributeIndex).numValues();
+	private double[] calcProbabilities(Instances instances) {
+		// number of possible classifications
+		int numValues = instances.numClasses();
 		// number of instances in the instances set
 		int numInstances = instances.numInstances();
 		double[] probabilities = new double[numValues];
@@ -337,7 +339,7 @@ public class DecisionTree implements Classifier {
 		// of the attribute, stores the info in the cell of the array
 		// that corresponds to that possible value
 		for (int i = 0; i < numInstances; i++) {
-			probabilities[(int) instances.instance(i).value(attributeIndex)]++;//SHOULD BE CLASS INDEX
+			probabilities[(int) instances.instance(i).classValue()]++;
 		}
 	
 		// puts the actual probabilities in the array be dividing each
