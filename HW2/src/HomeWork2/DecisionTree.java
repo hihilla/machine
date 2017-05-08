@@ -87,8 +87,6 @@ public class DecisionTree implements Classifier {
 	 */
 	private Node buildTree(Instances instances) {
 		int numAttributes = instances.numAttributes();
-		int classIndex = instances.classIndex();
-		int numOfClassifications = instances.numClasses();
 		
 		if (sameAttributeValue(instances) || sameClassValue(instances)){
 			// all instances are getting same classification, this node is a leaf.
@@ -106,7 +104,6 @@ public class DecisionTree implements Classifier {
 	
 		// define node with bestAttribute as attributeIndex and give it the children
 		Node node = new Node(childs);
-		
 		
 		// divide instances to children
 		Instances[] divideInstances = new Instances[numOfChildren];
@@ -402,7 +399,7 @@ public class DecisionTree implements Classifier {
 		double chiSquare = 0;
 	
 		// probability for classification (1/0)
-		double[] probabilitiesForClass = calcProbabilities(instances, instances.classIndex());
+		double[] probabilitiesForClass = calcProbabilities(instances);
 		double Py0 = probabilitiesForClass[0];
 		double Py1 = probabilitiesForClass[1];
 	
