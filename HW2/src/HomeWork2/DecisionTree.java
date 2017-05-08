@@ -465,14 +465,12 @@ public class DecisionTree implements Classifier {
 	 * best rule to remove according to the error on the validation set and
 	 * remove it from the rule set. Stop removing rules when there is no
 	 * improvement.
+	 * PAY ATTENTION – for how you loops over the rule, how you remove rules
+	 * during this loop, how you decide to stop.
 	 * 
 	 * @param validationSet
 	 */
 	private void rulePrunning(Instances validationSet) {
-		// PAY ATTENTION – for how you loops over the rule, how you remove rules
-		// during this loop, how you decide to stop.
-		// TODO: implement this method
-		
 		//number of rules
 		int rulesNum = rules.size();
 		//current best error
@@ -485,12 +483,12 @@ public class DecisionTree implements Classifier {
 		boolean rulesUpdates = true;
 		
 		while (rulesUpdates) {
-			for (int i = 0; i < rulesNum; i++){
+			for (int i = rulesNum; i >= 0; i--){
 				//removes a rule from set of rules, check the current
 				//error (without the rule)
 				extractRule = rules.remove(i);
 				currErr = calcAvgError(validationSet);
-				//the was improved:
+				//if there was an improvement:
 				//updates the current best error to be the current error
 				//adds 1 to counter
 				if (currErr < currBestErr){
@@ -506,7 +504,9 @@ public class DecisionTree implements Classifier {
 			//(else, gets into another iteration of pruning)
 			if (counterOfPruns == 0){
 				rulesUpdates = false;
-			} 
+			}
+			//updates the size of the rules list towards next iteration
+			rulesNum = rules.size();
 		}	
 	}
 
