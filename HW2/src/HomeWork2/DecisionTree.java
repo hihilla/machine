@@ -268,12 +268,8 @@ public class DecisionTree implements Classifier {
 	private double calcInfoGain(Instances instances, int attributeIndex) {
 		// total of all iterations of sigma
 		double Sigma = 0;
-		//class index...
-		double classIndex = instances.classIndex();
 		// entropy of all of the instances (first part of formula)
 		double entropyS = calcEntropy(calcProbabilities(instances));
-		// for every value i of the attribute, holds the inner part of sigma
-		// double tempSigma;
 		// the array of probabilities, to be used while calculate tempSigma
 		double[] probs = calcProbabilities(instances);
 		//
@@ -542,15 +538,49 @@ public class DecisionTree implements Classifier {
 	 * best rule to remove according to the error on the validation set and
 	 * remove it from the rule set. Stop removing rules when there is no
 	 * improvement.
+	 * PAY ATTENTION – for how you loops over the rule, how you remove rules
+	 * during this loop, how you decide to stop.
 	 * 
 	 * @param validationSet
 	 */
 	private void rulePrunning(Instances validationSet) {
-		// PAY ATTENTION – for how you loops over the rule, how you remove rules
-		// during this loop, how you decide to stop.
-		// TODO: implement this method
+		//number of rules
+		int rulesNum = rules.size();
+		//current best error
+		double currBestErr = calcAvgError(validationSet);
+		//to hold error after removing a single rule
+		double currErr;
+		//a rule pulled out to be checked if the error is better without it
+		Rule extractRule;
+		int counterOfPruns = 0;
+		boolean rulesUpdates = true;
 		
-		
+		while (rulesUpdates) {
+			for (int i = rulesNum; i >= 0; i--){
+				//removes a rule from set of rules, check the current
+				//error (without the rule)
+				extractRule = rules.remove(i);
+				currErr = calcAvgError(validationSet);
+				//if there was an improvement:
+				//updates the current best error to be the current error
+				//adds 1 to counter
+				if (currErr < currBestErr){
+					currBestErr = currErr;
+					counterOfPruns++;
+				//there's no improvement, returns the current rule to rules
+				} else {
+					rules.add(i, extractRule);
+				}
+			}
+			//if there are no updates, this is the best set of
+			//rules possible and wer're done
+			//(else, gets into another iteration of pruning)
+			if (counterOfPruns == 0){
+				rulesUpdates = false;
+			}
+			//updates the size of the rules list towards next iteration
+			rulesNum = rules.size();
+		}	
 	}
 
 	public void setPruningMode(PruningMode pruningMode) {
