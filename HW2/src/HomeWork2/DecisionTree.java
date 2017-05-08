@@ -1,14 +1,12 @@
 ﻿package HomeWork2;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import weka.classifiers.Classifier;
 import weka.core.Capabilities;
 import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.pmml.jaxbbindings.CUMULATIVELINKFUNCTION;
 
 class BasicRule {
 	int attributeIndex;
@@ -70,56 +68,15 @@ public class DecisionTree implements Classifier {
 	public void buildClassifier(Instances arg0) throws Exception {
 		// build a tree
 		rootNode = buildTree(arg0);
-		// go over it and find each nodes rule
+		// go over it and find each Rules returnValue
+		int numOfRules = this.rules.size();
+		for (int i = 0; i < numOfRules; i++) {
+			rules.get(i).returnValue = findReturnValue(arg0);
+		}
 		
 		// do some prunning
 		// set the tree to this classObject....
 		
-	}
-
-	public void setPruningMode(PruningMode pruningMode) {
-		m_pruningMode = pruningMode;
-	}
-
-	public void setValidation(Instances validation) {
-		validationSet = validation;
-	}
-
-	@Override
-	/**
-	 * checks the classification of a single instance
-	 *
-	 * @param instance for which function checks classification 
-	 * @return instance's classification
-	 */
-	public double classifyInstance(Instance instance) {
-		int numRules = this.rules.size();
-		int numBasicRules;
-		
-		// Trying to find a Rule that applies. 
-		// If not applying a basic rule in the current Rule, 
-		// stop with this Rule and continue to next Rule.
-		for (int i = 0; i < numRules; i++) {
-			Rule curRule = this.rules.get(i);
-			boolean applyRule = true;
-			numBasicRules = curRule.basicRule.size();
-			for (int j = 0; j < numBasicRules && applyRule; j++) {
-				BasicRule curBasicRule = curRule.basicRule.get(j);
-				if (curBasicRule.attributeValue != instance.value(curBasicRule.attributeIndex)){
-					applyRule = false; // Stop and continue to next Rule.
-				}
-			}
-			if (applyRule) {
-				// if after checking all basic rules in the Rule applyRule is true,
-				// the instance applies the Rule, return appropriate return Value.
-				return curRule.returnValue;
-			}
-			
-			// instance does not purely applies any Rule.
-			// need to fine a best matched rule.
-		}
-		
-		return 0;
 	}
 
 	/**
@@ -136,24 +93,17 @@ public class DecisionTree implements Classifier {
 		if (sameAttributeValue(instances) || sameClassValue(instances)){
 			// all instances are getting same classification, this node is a leaf.
 			// find the returnValue for this leaf:
-			int returnValue;
-			double[] instClasses = instances.attributeToDoubleArray(classIndex);
-			if (instClasses == null || instClasses.length == 0) {
-				returnValue = 0;
-			} else {
-				returnValue = findMax(buildHistogram(instClasses, 
-													numOfClassifications));
-			}
+			int returnValue = findReturnValue(instances);
 			return new Node(returnValue);
 		}
-
+	
 		// getting best attribute
 		int bestAttribute = findBestAttribute(instances, numAttributes);
-
+	
 		// create children for the node
 		int numOfChildren = instances.attribute(bestAttribute).numValues();
 		Node[] childs = new Node[numOfChildren];
-
+	
 		// define node with bestAttribute as attributeIndex and give it the children
 		Node node = new Node(childs);
 		
@@ -170,16 +120,8 @@ public class DecisionTree implements Classifier {
 				// building a tree for a child that has instances
 				childs[i] = buildTree(divideInstances[i]);
 			} else {
-				// this child is a leaf!!
 				// find the returnValue for this leaf:
-				int returnValue;
-				double[] instClasses = instances.attributeToDoubleArray(classIndex);
-				if (instClasses == null || instClasses.length == 0) {
-					returnValue = 0;
-				} else {
-					returnValue = findMax(buildHistogram(instClasses, 
-														numOfClassifications));
-				}
+				int returnValue = findReturnValue(instances);
 				// set return value and parent for this leaf
 				childs[i] = new Node(returnValue);
 			}
@@ -190,11 +132,38 @@ public class DecisionTree implements Classifier {
 		}
 		return node;
 	}
-	
+
+	/**
+	 * Find the return value according to given subset of instances
+	 * @param instances
+	 * @param classIndex
+	 * @param numOfClassifications
+	 * @return
+	 */
+	private int findReturnValue(Instances instances) {
+		int classIndex = instances.classIndex();
+		int numOfClassifications = instances.attribute(classIndex).numValues();
+		int returnValue;
+		double[] instClasses = instances.attributeToDoubleArray(classIndex);
+		if (instClasses == null || instClasses.length == 0) {
+			returnValue = 0;
+		} else {
+			returnValue = findMax(buildHistogram(instClasses, 
+												numOfClassifications));
+		}
+		return returnValue;
+	}
+
+	/**
+	 * Checking if all given instances has the same attribute values
+	 * for each attribute.
+	 * @param instances
+	 * @return true if all instances has the same attribute values.
+	 */
 	private boolean sameAttributeValue(Instances instances){
 		int numInstances = instances.numInstances();
 		int numAttribute = instances.numAttributes();
-
+	
 		// going over all attributes and checking for same attribute values:
 		for (int i = 0; i < numAttribute; i++) {
 			Instance curInstance = instances.firstInstance();
@@ -208,7 +177,7 @@ public class DecisionTree implements Classifier {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Checking if all given instances has the same classification.
 	 * @param instances
@@ -216,7 +185,7 @@ public class DecisionTree implements Classifier {
 	 */
 	private boolean sameClassValue(Instances instances){
 		int numInstances = instances.numInstances();
-
+	
 		// if all instances have the same classification:
 		Instance curInstance = instances.firstInstance();
 		double classValue = curInstance.classValue();
@@ -228,7 +197,7 @@ public class DecisionTree implements Classifier {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Create a histogram from a given array with values in range [0 - size]
 	 * @param arr
@@ -260,7 +229,7 @@ public class DecisionTree implements Classifier {
 		}
 		return max;
 	}
-	
+
 	/**
 	 * Calculate info gain for each attribute and find the attribute that 
 	 * gives min info gain
@@ -279,30 +248,6 @@ public class DecisionTree implements Classifier {
 			}
 		}
 		return bestAttribute;
-	}
-
-	/**
-	 * Calculate the average on a given instances set (could be the training,
-	 * test or validation set). The average error is the total number of
-	 * classification mistakes on the input instances set and divides that by
-	 * the number of instances in the input set.
-	 * 
-	 * @param instances
-	 * @return Average error
-	 */
-	public double calcAvgError(Instances instances) {
-		double error = 0;
-		double numMistake = 0;
-		int numInstances = instances.numInstances();
-		for (int i = 0; i < numInstances; i++) {
-			Instance curInstance = instances.instance(i);
-			// if real value differs from predicted value, its a mistake!
-			if (curInstance.classValue() != classifyInstance(curInstance)) {
-				numMistake++;
-			}
-		}
-		error = numMistake / (double) numInstances;
-		return error;
 	}
 
 	/**
@@ -326,7 +271,7 @@ public class DecisionTree implements Classifier {
 		double[] probs = calcProbabilities(instances, attributeIndex);
 		//
 		double subsetEntropy;
-
+	
 		for (int i = 0; i < probs.length; i++) {
 			// hold only instances that hold the value i of the given attribute
 			Instances subsetInstances = generateSubsetInstances(instances, attributeIndex, i);
@@ -337,44 +282,6 @@ public class DecisionTree implements Classifier {
 			Sigma += subsetEntropy * probs[i];
 		}
 		return (entropyS - Sigma);
-	}
-
-	/**
-	 * Calculates, for set of instances, their probabilities for all of possible
-	 * values according to a given attribute
-	 * 
-	 * @param instances
-	 *            set of instances
-	 * @param attributeIndex
-	 *            attribute to check probs according to its possible values
-	 * @return array of double with all possible probabilities
-	 */
-
-	private double[] calcProbabilities(Instances instances, int attributeIndex) {
-		// number of possible values of the given attribute
-		int numValues = instances.attribute(attributeIndex).numValues();
-		// number of instances in the instances set
-		int numInstances = instances.numInstances();
-		double[] probabilities = new double[numValues];
-
-		// if there are no instances, returns meaningless array
-		if (numInstances < 1) {
-			return probabilities;
-		}
-
-		// goes through all instances and gets for each the value
-		// of the attribute, stores the info in the cell of the array
-		// that corresponds to that possible value
-		for (int i = 0; i < numInstances; i++) {
-			probabilities[(int) instances.instance(i).value(attributeIndex)]++;//SHOULD BE CLASS INDEX
-		}
-
-		// puts the actual probabilities in the array be dividing each
-		// cell of the array by the number of possible values
-		for (int i = 0; i < probabilities.length; i++) {
-			probabilities[i] = probabilities[i] / numValues;
-		}
-		return probabilities;
 	}
 
 	/**
@@ -390,7 +297,7 @@ public class DecisionTree implements Classifier {
 		double tempValProb;
 		int numOfValues = probabilities.length;
 		double entropy = 0;
-
+	
 		// calculates for every cell of the array its part of
 		// the entropy (the Sigma itself), and sums to entropy
 		for (int i = 0; i < numOfValues; i++) {
@@ -399,8 +306,46 @@ public class DecisionTree implements Classifier {
 				entropy += (-1) * ((tempValProb * (Math.log(tempValProb) / Math.log(2.0))));
 			}
 		}
-
+	
 		return entropy;
+	}
+
+	/**
+	 * Calculates, for set of instances, their probabilities for all of possible
+	 * values according to a given attribute
+	 * 
+	 * @param instances
+	 *            set of instances
+	 * @param attributeIndex
+	 *            attribute to check probs according to its possible values
+	 * @return array of double with all possible probabilities
+	 */
+	
+	private double[] calcProbabilities(Instances instances, int attributeIndex) {
+		// number of possible values of the given attribute
+		int numValues = instances.attribute(attributeIndex).numValues();
+		// number of instances in the instances set
+		int numInstances = instances.numInstances();
+		double[] probabilities = new double[numValues];
+	
+		// if there are no instances, returns meaningless array
+		if (numInstances < 1) {
+			return probabilities;
+		}
+	
+		// goes through all instances and gets for each the value
+		// of the attribute, stores the info in the cell of the array
+		// that corresponds to that possible value
+		for (int i = 0; i < numInstances; i++) {
+			probabilities[(int) instances.instance(i).value(attributeIndex)]++;//SHOULD BE CLASS INDEX
+		}
+	
+		// puts the actual probabilities in the array be dividing each
+		// cell of the array by the number of possible values
+		for (int i = 0; i < probabilities.length; i++) {
+			probabilities[i] = probabilities[i] / numValues;
+		}
+		return probabilities;
 	}
 
 	/**
@@ -449,19 +394,20 @@ public class DecisionTree implements Classifier {
 		int numInstanceswithFAndNeg = 0;
 		double posE, negE;
 		double chiSquare = 0;
-
+	
 		// probability for classification (1/0)
 		double[] probabilitiesForClass = calcProbabilities(instances, instances.classIndex());
 		double Py0 = probabilitiesForClass[0];
 		double Py1 = probabilitiesForClass[1];
-
+	
 		// going over all possible values for attribute at attributeIndex
 		for (int f = 0; f < numValues; f++) {
 			double tempCalc = 0;
 			// calculating number of instances which j attribute value is f
 			for (int i = 0; i < numInstances; i++) {
 				Instance curInstance = instances.instance(i);
-				if (curInstance.attribute(attributeIndex).value(f) == instances.attribute(attributeIndex).value(f)) {
+				if (curInstance.attribute(attributeIndex).value(f) == 
+						instances.attribute(attributeIndex).value(f)) {
 					numInstancesWithCurValue++;
 					if (curInstance.classValue() == 1) {
 						numInstanceswithFAndPos++;
@@ -472,7 +418,7 @@ public class DecisionTree implements Classifier {
 			}
 			posE = numInstancesWithCurValue * Py1;
 			negE = numInstancesWithCurValue * Py0;
-
+	
 			// making sure not to divide by 0
 			if ((posE != 0) && (negE != 0)) {
 				tempCalc = (Math.pow((numInstanceswithFAndPos - posE), 2) / posE)
@@ -504,7 +450,7 @@ public class DecisionTree implements Classifier {
 	 * for 0.95 confidence level.
 	 */
 	private void chiSquarePrunning() {
-
+	
 		// PAY ATTENTION – where you need to perform this test, what you should
 		// do if the result is to prune.
 		// TODO: implement this method
@@ -526,6 +472,146 @@ public class DecisionTree implements Classifier {
 		// TODO: implement this method
 		
 		
+	}
+
+	public void setPruningMode(PruningMode pruningMode) {
+		m_pruningMode = pruningMode;
+	}
+
+	public void setValidation(Instances validation) {
+		validationSet = validation;
+	}
+
+	@Override
+	/**
+	 * checks the classification of a single instance
+	 *
+	 * @param instance for which function checks classification 
+	 * @return instance's classification
+	 */
+	public double classifyInstance(Instance instance) {
+		int numRules = this.rules.size();
+		int numBasicRules;
+		
+		// Trying to find a Rule that applies. 
+		// If not applying a basic rule in the current Rule, 
+		// stop with this Rule and continue to next Rule.
+		for (int i = 0; i < numRules; i++) {
+			Rule curRule = this.rules.get(i);
+			boolean applyRule = true;
+			numBasicRules = curRule.basicRule.size();
+			for (int j = 0; j < numBasicRules && applyRule; j++) {
+				BasicRule curBasicRule = curRule.basicRule.get(j);
+				if (curBasicRule.attributeValue != instance.value(curBasicRule.attributeIndex)){
+					applyRule = false; // Stop and continue to next Rule.
+				}
+			}
+			if (applyRule) {
+				// if after checking all basic rules in the Rule applyRule is true,
+				// the instance applies the Rule, return appropriate return Value.
+				return curRule.returnValue;
+			}
+		}
+		
+		// instance does not purely applies any Rule.
+		// need to fine a best matched rule.
+		// if more then one rule has the same number of consecutive met conditions
+		// insert it to the suitableRules array and choose from there.
+		Rule mostSuitableRule = this.rules.get(0);
+		List<Rule> suitableRules = new ArrayList<Rule>();
+		int largestNumOfConsecutiveConditions = 0; 
+		boolean moreThenOneRule = false;
+		for (int i = 0; i < numRules; i++) {
+			boolean applyRule = true;
+			Rule curRule = this.rules.get(i);
+			int curConsecutiveCondition = 0;
+			numBasicRules = curRule.basicRule.size();
+			for (int j = 0; j < numBasicRules && applyRule; j++) {
+				BasicRule curBasicRule = curRule.basicRule.get(j);
+				if (curBasicRule.attributeValue != instance.value(curBasicRule.attributeIndex)){
+					applyRule = false; // Stop and continue to next Rule.
+				} else {
+					// count this Rules consecutive conditions
+					curConsecutiveCondition++;
+				}
+			}
+			if (curConsecutiveCondition > largestNumOfConsecutiveConditions) {
+				// this Rule is better then last one!
+				// saving this Rule and deleting previous data
+				moreThenOneRule = false;
+				largestNumOfConsecutiveConditions = curConsecutiveCondition;
+				mostSuitableRule = curRule;
+				suitableRules = new ArrayList<Rule>();
+			} else if (curConsecutiveCondition == largestNumOfConsecutiveConditions) {
+				// same number of consecutive conditions as a previous Rule
+				// adding this Rule to list of Rules
+				moreThenOneRule = true;
+				suitableRules.add(curRule);
+			}
+		}
+		if (moreThenOneRule) {
+			// there are more than one rule with the largest number from the previous step 
+			// classify with the majority of the returning values of those rules
+			int numOfRules = suitableRules.size();
+			int minNumOfRules = Integer.MAX_VALUE;
+			mostSuitableRule = suitableRules.get(0);
+			int numOfRulesToEnd = 0;
+			for (int i = 0; i < numOfRules; i++) {
+				Rule curRule = suitableRules.get(i);
+				numOfRulesToEnd = 0;
+				// iterating over Rule until meeting an unfulfilled basic rule
+				boolean meetRule = true;
+				BasicRule curBasicRule = curRule.basicRule.get(0);
+				for (int j = 0; j < curRule.basicRule.size() && meetRule; j++) {
+					curBasicRule = curRule.basicRule.get(i);
+					if (curBasicRule.attributeValue != instance.value(curBasicRule.attributeIndex)){
+						// an unfulfilled basic rule met!
+						meetRule = false;
+					}
+				}
+				// curBasicRule is the unfulfilled basic rule
+				// count number of basic rules until the end of this Rule
+				for (int j = curRule.basicRule.indexOf(curBasicRule); j < curRule.basicRule.size(); j++) {
+					numOfRulesToEnd++;
+				}
+				if (numOfRulesToEnd < minNumOfRules) {
+					// if this Rule is closer to the end (to a leaf) then the previous 
+					// best rule, keep it (to return at the end)
+					numOfRulesToEnd = minNumOfRules;
+					mostSuitableRule = curRule;
+				}	
+			}
+			// mostSuitableRule is the best rule - has the shortest path to a leaf
+			// among other rules that has the same number of consecutive met conditions
+			return mostSuitableRule.returnValue;
+		} else {
+			// returning the rule that meets the largest number of consecutive conditions
+			return mostSuitableRule.returnValue;
+		}
+	}
+
+	/**
+	 * Calculate the average on a given instances set (could be the training,
+	 * test or validation set). The average error is the total number of
+	 * classification mistakes on the input instances set and divides that by
+	 * the number of instances in the input set.
+	 * 
+	 * @param instances
+	 * @return Average error
+	 */
+	public double calcAvgError(Instances instances) {
+		double error = 0;
+		double numMistake = 0;
+		int numInstances = instances.numInstances();
+		for (int i = 0; i < numInstances; i++) {
+			Instance curInstance = instances.instance(i);
+			// if real value differs from predicted value, its a mistake!
+			if (curInstance.classValue() != classifyInstance(curInstance)) {
+				numMistake++;
+			}
+		}
+		error = numMistake / (double) numInstances;
+		return error;
 	}
 
 	@Override
