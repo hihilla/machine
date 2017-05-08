@@ -473,7 +473,41 @@ public class DecisionTree implements Classifier {
 		// during this loop, how you decide to stop.
 		// TODO: implement this method
 		
+		//number of rules
+		int rulesNum = rules.size();
+		//current best error
+		double currBestErr = calcAvgError(validationSet);
+		//to hold error after removing a single rule
+		double currErr;
+		//a rule pulled out to be checked if the error is better without it
+		Rule extractRule;
+		int counterOfPruns = 0;
+		boolean rulesUpdates = true;
 		
+		while (rulesUpdates) {
+			for (int i = 0; i < rulesNum; i++){
+				//removes a rule from set of rules, check the current
+				//error (without the rule)
+				extractRule = rules.remove(i);
+				currErr = calcAvgError(validationSet);
+				//the was improved:
+				//updates the current best error to be the current error
+				//adds 1 to counter
+				if (currErr < currBestErr){
+					currBestErr = currErr;
+					counterOfPruns++;
+				//there's no improvement, returns the current rule to rules
+				} else {
+					rules.add(i, extractRule);
+				}
+			}
+			//if there are no updates, this is the best set of
+			//rules possible and wer're done
+			//(else, gets into another iteration of pruning)
+			if (counterOfPruns == 0){
+				rulesUpdates = false;
+			} 
+		}	
 	}
 
 	public void setPruningMode(PruningMode pruningMode) {
