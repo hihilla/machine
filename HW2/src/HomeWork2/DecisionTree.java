@@ -245,14 +245,13 @@ public class DecisionTree implements Classifier {
 	private boolean sameAttributeValue(Instances instances) {
 		int numInstances = instances.numInstances();
 		int numAttribute = instances.numAttributes();
-
 		// going over all attributes and checking for same attribute values:
 		for (int i = 0; i < numAttribute; i++) {
 			Instance curInstance = instances.firstInstance();
-			double attributeValue = curInstance.value(0);
+			double attributeValue = curInstance.value(i);
 			for (int j = 1; j < numInstances; j++) {
-				curInstance = instances.instance(i);
-				if (curInstance.value(j) != attributeValue) {
+				curInstance = instances.instance(j);
+				if (curInstance.value(i) != attributeValue) {
 					return false;
 				}
 			}
@@ -353,7 +352,6 @@ public class DecisionTree implements Classifier {
 		double entropyS = calcEntropy(calcProbabilities(instances));
 		// the array of probabilities, to be used while calculate tempSigma
 		double[] probs = calcProbabilities(instances);
-		//
 		double subsetEntropy;
 
 		for (int i = 0; i < probs.length; i++) {
@@ -442,11 +440,12 @@ public class DecisionTree implements Classifier {
 	 * @param attributeValue
 	 * @return subset of instances
 	 */
-	private Instances generateSubsetInstances(Instances instances, int attributeIndex, double attributeValue) {
+	private Instances generateSubsetInstances(Instances instances, int attributeIndex, 
+													double attributeValue) {
 		Instances subInstances = new Instances(instances);
 		int numInstances = instances.numInstances();
 		// removing instances with different value
-		for (int i = numInstances - 1; i <= 0; i--) {
+		for (int i = numInstances - 1; i > -1; i--) {
 			Instance curInstance = subInstances.instance(i);
 			double curValue = curInstance.value(attributeIndex);
 			if (curValue != attributeValue) {
@@ -804,4 +803,23 @@ public class DecisionTree implements Classifier {
 	public int getNumRules() {
 		return rules.size();
 	}
+	
+//	public printTree() {
+//		recPrintTree(rootNode, level);
+//	}
+//	
+//	private void recPrintTree(Node node, int level) {
+//        for(int i = 0; i < level; i++) {
+//            System.out.print("-");
+//        }
+//        System.out.println("> " + node.attributeIndex + " value: " + node.returnValue);
+//        if(node.returnValue == 2) {
+//            System.out.println("HA?!");
+//        }
+//        if(node.children != null) {
+//            for (Node child : node.children) {
+//                printTree(child, level + 1);
+//            }
+//        }
+//    }
 }
