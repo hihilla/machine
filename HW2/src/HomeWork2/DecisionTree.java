@@ -78,8 +78,20 @@ public class DecisionTree implements Classifier {
 		// setting rules from the tree
 		setAllRules();
 		
-		
-
+		// prune according to pruning mode:
+		switch (m_pruningMode) {
+		case Chi:
+			// chi pruning:
+			chiSquarePrunning();
+			break;
+		case Rule:
+			// rule pruning:
+			rulePrunning();
+			break;
+		default:
+			// no pruning!
+			break;
+		}
 	}
 
 	/**
@@ -585,7 +597,7 @@ public class DecisionTree implements Classifier {
 	 * 
 	 * @param validationSet
 	 */
-	private void rulePrunning(Instances validationSet) {
+	private void rulePrunning() {
 		// number of rules
 		int rulesNum = rules.size();
 		// current best error
