@@ -80,8 +80,9 @@ public class DecisionTree implements Classifier {
 	}
 
 	/**
-	 * Builds the decision tree on given data set using either a recursive or
-	 * queue algorithm.
+	 * Builds the decision tree on given data set using a recursive
+	 * algorithm
+	 * 
 	 * 
 	 * @param instances
 	 */
@@ -148,8 +149,8 @@ public class DecisionTree implements Classifier {
 		int classIndex = instances.classIndex();
 		int numOfClassifications = instances.numClasses();
 		int returnValue;
-		// creating an array of size (number of instances), each cell i states
-		// the
+		// creating an array of size (number of instances), 
+		// each cell i states the
 		// classification of instance i
 		double[] instancesClassifications = instances.attributeToDoubleArray(classIndex);
 		if (instancesClassifications == null || instancesClassifications.length == 0) {
@@ -482,10 +483,10 @@ public class DecisionTree implements Classifier {
 	 * number from chi squared chart in the row for 8 degrees of freedom (which
 	 * is the number of attributes in the cancer data minus 1) and the column
 	 * for 0.95 confidence level.
+	 * PAY ATTENTION – where you need to perform this test, what you should
+	 * do if the result is to prune.
 	 */
 	private void chiSquarePrunning() {
-		// PAY ATTENTION – where you need to perform this test, what you should
-		// do if the result is to prune.
 		Node[] leafs = findAllLeafs();
 		int numOfLeafs = leafs.length;
 		double chiSquare = Double.MIN_VALUE;
@@ -522,17 +523,17 @@ public class DecisionTree implements Classifier {
 		Node parent = node.parent;
 		Node[] siblings = parent.children;
 		Node[] childs = node.children;
-		Node[] newChildres = new Node[siblings.length + childs.length - 1];
+		Node[] newChildren = new Node[siblings.length + childs.length - 1];
 		for (int i = 0; i < childs.length; i++) {
-			newChildres[i] = childs[i];
+			newChildren[i] = childs[i];
 		}
 		int j = 0;
-		for (int i = childs.length; i < newChildres.length; i++, j++) {
+		for (int i = childs.length; i < newChildren.length; i++, j++) {
 			if (siblings[j] != node) {
-				newChildres[i] = childs[j];
+				newChildren[i] = childs[j];
 			}
 		}
-		parent.children = newChildres;
+		parent.children = newChildren;
 		node.parent = null;
 	}
 
