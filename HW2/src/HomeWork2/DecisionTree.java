@@ -198,12 +198,16 @@ public class DecisionTree implements Classifier {
 	 */
 	private Node[] findAllLeafs() {
 		List<Node> lst = recFindAllLeafs(this.rootNode);
-		return (Node[]) lst.toArray();
+		Node[] leafs = new Node[lst.size()];
+		for (int i = 0; i < leafs.length; i++) {
+			leafs[i] = lst.get(i);
+		}
+		return leafs;
 	}
 
 	private List<Node> recFindAllLeafs(Node node) {
 		List<Node> lst = new ArrayList<Node>();
-		if (node.children.length == 0) {
+		if (node.children == null) {
 			lst.add(node);
 			return lst;
 		}
@@ -577,12 +581,23 @@ public class DecisionTree implements Classifier {
 		Node parent = node.parent;
 		Node[] siblings = parent.children;
 		Node[] childs = node.children;
-		Node[] newChildren = new Node[siblings.length + childs.length - 1];
-		for (int i = 0; i < childs.length; i++) {
+		int size = -1;
+		if (childs != null) {
+			size += childs.length;
+		}
+		if (siblings != null) {
+			size += siblings.length;
+		}
+		Node[] newChildren = new Node[size];
+		for (int i = 0; (childs != null) && i < childs.length; i++) {
 			newChildren[i] = childs[i];
 		}
-		int j = 0;
-		for (int i = childs.length; i < newChildren.length; i++, j++) {
+		int i = 0;
+		if (childs != null) {
+			i += childs.length;
+		}
+		for (int j = 0; i < newChildren.length; i++, j++) {
+			System.out.println("WAPPA!!");
 			if (siblings[j] != node) {
 				newChildren[i] = childs[j];
 			}
