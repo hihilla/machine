@@ -35,7 +35,6 @@ class Node {
 	int attributeIndex;
 	double returnValue;
 	Rule nodeRule = new Rule();
-	boolean marked = false;
 
 	// Construct a general child-less node
 	public Node(Node[] children) {
@@ -76,9 +75,10 @@ public class DecisionTree implements Classifier {
 		for (int i = 0; i < numOfRules; i++) {
 			rules.get(i).returnValue = findReturnValue(arg0);
 		}
-
-		// do some prunning
-		// set the tree to this classObject....
+		// setting rules from the tree
+		setAllRules();
+		
+		
 
 	}
 
@@ -135,25 +135,43 @@ public class DecisionTree implements Classifier {
 		}
 		return node;
 	}
-
-	private void findAllRules() {
-		Rule curRule;
-		List<Rule> foundRules = new ArrayList<Rule>();
-		Node curNode = this.rootNode;
-		
-	}
 	
 	/**
-	 * Checks if all nodes in nodes array are marked.
-	 * @param nodes
-	 * @return true if all are marked, if one isn't returns false
+	 * Climbing up from leaf to root nodes. For each node in that path,
+	 * pushing nodes basic rule to a stack.
+	 * When reaching the root, going over the stack and popping basic rules
+	 * from the stack to the Rule (list of basic rules).
+	 * Last in: roots basic rule, will be the first basic rule that we pop
+	 * from the stack, therefore will be the first basic rule of the Rule.
+	 * That way, the Rule as actually the basic rules from root to leaf.
+	 * @param leaf
+	 * @return Rule - list of basic rules from root to given leaf
 	 */
-	private boolean areMarked(Node[] nodes) {
-		for (Node node : nodes) {
-			if (!node.marked) return false;
+	private Rule ruleOfLeaf(Node leaf) {
+		Stack<BasicRule> basicRules = new Stack<BasicRule>();
+		Node curNode = leaf;
+		// climbing up from leaf to root
+		while (curNode.parent != null) {
+			basicRules.push(curNode.nodeRule.basicRule.get(0));
+			curNode = curNode.parent;
 		}
-		
-		return true;
+		Rule leafsRule = new Rule();
+		// popping basic rules from stack to Rule (roots rule first, leafs rule last)
+		while (!basicRules.isEmpty()) {
+			leafsRule.add(basicRules.pop());
+		}
+		return leafsRule;
+	}
+
+	/**
+	 * Every leaf corresponds to a Rule. Adding leafs Rule to rules.
+	 */
+	private void setAllRules() {
+		rules = new ArrayList<Rule>();
+		Node[] leafs = findAllLeafs();
+		for (Node leaf : leafs) {
+			rules.add(ruleOfLeaf(leaf));
+		}
 	}
 
 	/**
