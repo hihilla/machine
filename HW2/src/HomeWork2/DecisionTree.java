@@ -207,6 +207,9 @@ public class DecisionTree implements Classifier {
 
 	private List<Node> recFindAllLeafs(Node node) {
 		List<Node> lst = new ArrayList<Node>();
+		if (node == null) {
+			return lst;
+		}
 		if (node.children == null) {
 			lst.add(node);
 			return lst;
@@ -558,7 +561,8 @@ public class DecisionTree implements Classifier {
 				// simulate the prune of this leaf and check for chi square
 				tempTree.buildTree(validationSet);
 				tempTree.removeNode(leafs[i]);
-				double curChi = tempTree.calcChiSquare(validationSet, i);
+				tempTree.setAllRules();
+				double curChi = tempTree.calcChiSquare(validationSet, 0);
 				if (curChi > bestChi) {
 					// prune this leaf!!!
 					bestLeaf = leafs[i];
@@ -579,7 +583,10 @@ public class DecisionTree implements Classifier {
 
 	private void removeNode(Node node) {
 		Node parent = node.parent;
-		Node[] siblings = parent.children;
+		Node[] siblings = null;
+		if (parent != null) {
+			siblings = parent.children;
+		}
 		Node[] childs = node.children;
 		int size = -1;
 		// if there are no children or no siblings, don't count them!!!
@@ -588,6 +595,10 @@ public class DecisionTree implements Classifier {
 		}
 		if (siblings != null) {
 			size += siblings.length;
+		}
+		if (size == -1) {
+			// no siblings, no children
+			return;
 		}
 		// connect nodes children to the parent
 		Node[] newChildren = new Node[size];
@@ -600,7 +611,7 @@ public class DecisionTree implements Classifier {
 		if (childs != null) {
 			i += childs.length;
 		}
-		for (int j = 0; i < newChildren.length && j < siblings.length; i++, j++) {
+		for (int j = 0; (siblings != null) && i < newChildren.length && j < siblings.length; i++, j++) {
 			if (siblings[j] != null && siblings[j] != node) {
 				newChildren[i] = siblings[j];
 			}
