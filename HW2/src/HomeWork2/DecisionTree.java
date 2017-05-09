@@ -786,4 +786,10 @@ public class DecisionTree implements Classifier {
 		return null;
 	}
 
+	/**
+	 * @return the number of rules in decision tree
+	 */
+	public int getNumRules() {
+		return rules.size();
+	}
 }
