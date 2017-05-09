@@ -69,16 +69,34 @@ public class MainHW2 {
 							+ aveTrainErr);
 		System.out.println("The average test error of the decision tree is "
 							+ aveTestErr);
+		System.out.println("The amount of rules generated from the tree " 
+							+ numOfRules);
 		
 		aveTrainErr = treeWithChiPruning.calcAvgError(trainingCancer);
 		aveTestErr = treeWithChiPruning.calcAvgError(testingCancer);
+		numOfRules = treeWithChiPruning.getNumRules();
 		System.out.println("Decision Tree with Chi prunning");
-		System.out.println("The average train error of the decision tree is "
+		System.out.println("The average train error of the decision tree "
+							+ "with Chi pruning is "
 							+ aveTrainErr);
-		System.out.println("The average test error of the decision tree is "
+		System.out.println("The average test error of the decision tree" 
+							+ "with Chi pruning is "	
 							+ aveTestErr);
-
+		System.out.println("The amount of rules generated from the tree " 
+				+ numOfRules);
 		
+		aveTrainErr = treeWithRulePruning.calcAvgError(trainingCancer);
+		aveTestErr = treeWithRulePruning.calcAvgError(testingCancer);
+		numOfRules = treeWithRulePruning.getNumRules();
+		System.out.println("Decision Tree with Rule prunning");
+		System.out.println("The average train error of the decision tree "
+							+ "with Rule pruning is "
+							+ aveTrainErr);
+		System.out.println("The average test error of the decision tree"
+							+ "with Rue pruning"
+							+ aveTestErr);
+		System.out.println("The amount of rules generated from the tree " 
+				+ numOfRules);
 		
 		
 	}
