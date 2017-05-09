@@ -23,6 +23,11 @@ class BasicRule {
 class Rule {
 	List<BasicRule> basicRule;
 	double returnValue;
+	
+	public Rule() {
+		basicRule = new ArrayList<BasicRule>();
+		returnValue = -1;
+	}
 
 	public void add(BasicRule bRule) {
 		basicRule.add(bRule);
@@ -114,6 +119,7 @@ public class DecisionTree implements Classifier {
 
 		// getting best attribute
 		int bestAttribute = findBestAttribute(instances, numAttributes);
+		System.out.println("best attribute: " + bestAttribute);
 
 		// create children for the node
 		int numOfChildren = instances.attribute(bestAttribute).numValues();
@@ -131,13 +137,14 @@ public class DecisionTree implements Classifier {
 
 		// now actually create the children and their tree
 		for (int i = 0; i < numOfChildren; i++) {
-			if (divideInstances[i].numInstances() != 0) {
+			if (divideInstances[i].numInstances() > 1) {
 				// building a tree for a child that has instances
 				childs[i] = buildTree(divideInstances[i]);
 			} else {
 				// find the returnValue for this leaf:
 				int returnValue = findReturnValue(instances);
 				// set return value and parent for this leaf
+				System.out.println(returnValue);
 				childs[i] = new Node(returnValue);
 			}
 			childs[i].parent = node;
@@ -267,7 +274,6 @@ public class DecisionTree implements Classifier {
 	 */
 	private boolean sameClassValue(Instances instances) {
 		int numInstances = instances.numInstances();
-
 		// if all instances have the same classification:
 		Instance curInstance = instances.firstInstance();
 		double classValue = curInstance.classValue();
@@ -306,12 +312,14 @@ public class DecisionTree implements Classifier {
 	 */
 	private int findMax(int[] arr) {
 		int max = arr[0];
+		int maxIndex = 0;
 		for (int i = 1; i < arr.length; i++) {
 			if (arr[i] > max) {
 				max = arr[i];
+				maxIndex = i;
 			}
 		}
-		return max;
+		return maxIndex;
 	}
 
 	/**
