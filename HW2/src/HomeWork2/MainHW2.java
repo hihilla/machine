@@ -52,14 +52,14 @@ public class MainHW2 {
 		treeWithNoPrunning.buildClassifier(trainingCancer);
 		
 		DecisionTree treeWithChiPruning = new DecisionTree();
-		treeWithNoPrunning.setPruningMode(PruningMode.Chi);
-		treeWithNoPrunning.setValidation(validationCancer);
-		treeWithNoPrunning.buildClassifier(trainingCancer);
+		treeWithChiPruning.setPruningMode(PruningMode.Chi);
+		treeWithChiPruning.setValidation(validationCancer);
+		treeWithChiPruning.buildClassifier(trainingCancer);
 		
 		DecisionTree treeWithRulePruning = new DecisionTree();
-		treeWithNoPrunning.setPruningMode(PruningMode.Rule);
-		treeWithNoPrunning.setValidation(validationCancer);
-		treeWithNoPrunning.buildClassifier(trainingCancer);
+		treeWithRulePruning.setPruningMode(PruningMode.Rule);
+		treeWithRulePruning.setValidation(validationCancer);
+		treeWithRulePruning.buildClassifier(trainingCancer);
 		
 		double aveTrainErr = treeWithNoPrunning.calcAvgError(trainingCancer);
 		double aveTestErr = treeWithNoPrunning.calcAvgError(testingCancer);

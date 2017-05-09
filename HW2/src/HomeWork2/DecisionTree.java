@@ -37,7 +37,7 @@ class Rule {
 class Node {
 	Node[] children;
 	Node parent;
-	int attributeIndex;
+	int attributeIndex = -1;
 	double returnValue;
 	Rule nodeRule = new Rule();
 
@@ -582,24 +582,27 @@ public class DecisionTree implements Classifier {
 		Node[] siblings = parent.children;
 		Node[] childs = node.children;
 		int size = -1;
+		// if there are no children or no siblings, don't count them!!!
 		if (childs != null) {
 			size += childs.length;
 		}
 		if (siblings != null) {
 			size += siblings.length;
 		}
+		// connect nodes children to the parent
 		Node[] newChildren = new Node[size];
 		for (int i = 0; (childs != null) && i < childs.length; i++) {
-			newChildren[i] = childs[i];
+			if (childs[i] != null) {
+				newChildren[i] = childs[i];
+			}
 		}
 		int i = 0;
 		if (childs != null) {
 			i += childs.length;
 		}
-		for (int j = 0; i < newChildren.length; i++, j++) {
-			System.out.println("WAPPA!!");
-			if (siblings[j] != node) {
-				newChildren[i] = childs[j];
+		for (int j = 0; i < newChildren.length && j < siblings.length; i++, j++) {
+			if (siblings[j] != null && siblings[j] != node) {
+				newChildren[i] = siblings[j];
 			}
 		}
 		parent.children = newChildren;
