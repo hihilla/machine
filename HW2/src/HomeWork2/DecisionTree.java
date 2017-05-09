@@ -109,17 +109,16 @@ public class DecisionTree implements Classifier {
 	private Node buildTree(Instances instances) {
 		int numAttributes = instances.numAttributes();
 
-		if (sameAttributeValue(instances) || sameClassValue(instances)) {
+		// getting best attribute
+		int bestAttribute = findBestAttribute(instances, numAttributes);
+		
+		if (sameAttributeValue(instances, bestAttribute) || sameClassValue(instances)) {
 			// all instances are getting same classification, this node is a
 			// leaf.
 			// find the returnValue for this leaf:
 			int returnValue = findReturnValue(instances);
 			return new Node(returnValue);
 		}
-
-		// getting best attribute
-		int bestAttribute = findBestAttribute(instances, numAttributes);
-		System.out.println("best attribute: " + bestAttribute);
 
 		// create children for the node
 		int numOfChildren = instances.attribute(bestAttribute).numValues();
@@ -144,7 +143,6 @@ public class DecisionTree implements Classifier {
 				// find the returnValue for this leaf:
 				int returnValue = findReturnValue(instances);
 				// set return value and parent for this leaf
-				System.out.println(returnValue);
 				childs[i] = new Node(returnValue);
 			}
 			childs[i].parent = node;
@@ -249,19 +247,19 @@ public class DecisionTree implements Classifier {
 	 * @param instances
 	 * @return true if all instances has the same attribute values.
 	 */
-	private boolean sameAttributeValue(Instances instances) {
+	private boolean sameAttributeValue(Instances instances, int attributeIndex) {
 		int numInstances = instances.numInstances();
 		int numAttribute = instances.numAttributes();
 		// going over all attributes and checking for same attribute values:
-		for (int i = 0; i < numAttribute; i++) {
-			Instance curInstance = instances.firstInstance();
-			double attributeValue = curInstance.value(i);
-			for (int j = 1; j < numInstances; j++) {
-				curInstance = instances.instance(j);
-				if (curInstance.value(i) != attributeValue) {
-					return false;
-				}
+
+		Instance curInstance = instances.firstInstance();
+		double attributeValue = curInstance.value(attributeIndex);
+		for (int j = 1; j < numInstances; j++) {
+			curInstance = instances.instance(j);
+			if (curInstance.value(attributeIndex) != attributeValue) {
+				return false;
 			}
+
 		}
 		return true;
 	}
