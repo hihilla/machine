@@ -5,6 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+import com.sun.javafx.css.CalculatedValue;
+import com.sun.org.glassfish.gmbal.Description;
+
+import HomeWork2.DecisionTree.PruningMode;
 import weka.core.Instances;
 
 public class MainHW2 {
@@ -41,6 +45,41 @@ public class MainHW2 {
 		Instances testingCancer = loadData("cancer_test.txt");
 		Instances validationCancer = loadData("cancer_validation.txt");
 		
-        //TODO: complete the Main method
+		//builds Decision Trees each time with different pruning method
+		DecisionTree treeWithNoPrunning = new DecisionTree();
+		treeWithNoPrunning.setPruningMode(PruningMode.None);
+		treeWithNoPrunning.setValidation(validationCancer);
+		treeWithNoPrunning.buildClassifier(trainingCancer);
+		
+		DecisionTree treeWithChiPruning = new DecisionTree();
+		treeWithNoPrunning.setPruningMode(PruningMode.Chi);
+		treeWithNoPrunning.setValidation(validationCancer);
+		treeWithNoPrunning.buildClassifier(trainingCancer);
+		
+		DecisionTree treeWithRulePruning = new DecisionTree();
+		treeWithNoPrunning.setPruningMode(PruningMode.Rule);
+		treeWithNoPrunning.setValidation(validationCancer);
+		treeWithNoPrunning.buildClassifier(trainingCancer);
+		
+		double aveTrainErr = treeWithNoPrunning.calcAvgError(trainingCancer);
+		double aveTestErr = treeWithNoPrunning.calcAvgError(testingCancer);
+		int numOfRules = treeWithNoPrunning.getNumRules();
+		System.out.println("Decision Tree with No prunning");
+		System.out.println("The average train error of the decision tree is "
+							+ aveTrainErr);
+		System.out.println("The average test error of the decision tree is "
+							+ aveTestErr);
+		
+		aveTrainErr = treeWithChiPruning.calcAvgError(trainingCancer);
+		aveTestErr = treeWithChiPruning.calcAvgError(testingCancer);
+		System.out.println("Decision Tree with Chi prunning");
+		System.out.println("The average train error of the decision tree is "
+							+ aveTrainErr);
+		System.out.println("The average test error of the decision tree is "
+							+ aveTestErr);
+
+		
+		
+		
 	}
 }
