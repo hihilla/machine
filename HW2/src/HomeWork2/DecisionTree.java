@@ -177,6 +177,7 @@ public class DecisionTree implements Classifier {
 		while (!basicRules.isEmpty()) {
 			leafsRule.add(basicRules.pop());
 		}
+		leafsRule.returnValue = leaf.returnValue;
 		return leafsRule;
 	}
 

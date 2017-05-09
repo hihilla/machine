@@ -50,11 +50,16 @@ public class MainHW2 {
 		treeWithNoPrunning.setPruningMode(PruningMode.None);
 		treeWithNoPrunning.setValidation(validationCancer);
 		treeWithNoPrunning.buildClassifier(trainingCancer);
+		System.out.println(treeWithNoPrunning.calcAvgError(testingCancer));
+		
+		System.out.println("hyravdtrtuykge");
 		
 		DecisionTree treeWithChiPruning = new DecisionTree();
 		treeWithChiPruning.setPruningMode(PruningMode.Chi);
 		treeWithChiPruning.setValidation(validationCancer);
 		treeWithChiPruning.buildClassifier(trainingCancer);
+		
+		System.out.println("hyravdtrtuykge");
 		
 		DecisionTree treeWithRulePruning = new DecisionTree();
 		treeWithRulePruning.setPruningMode(PruningMode.Rule);
