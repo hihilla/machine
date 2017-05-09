@@ -644,7 +644,7 @@ public class DecisionTree implements Classifier {
 		boolean rulesUpdates = true;
 
 		while (rulesUpdates) {
-			for (int i = rulesNum; i >= 0; i--) {
+			for (int i = rulesNum - 1; i >= 0; i--) {
 				// removes a rule from set of rules, check the current
 				// error (without the rule)
 				extractRule = rules.remove(i);
