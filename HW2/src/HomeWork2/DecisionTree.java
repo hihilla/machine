@@ -1,7 +1,9 @@
 ﻿package HomeWork2;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
 
 import weka.classifiers.Classifier;
 import weka.core.Capabilities;
@@ -33,6 +35,7 @@ class Node {
 	int attributeIndex;
 	double returnValue;
 	Rule nodeRule = new Rule();
+	boolean marked = false;
 
 	// Construct a general child-less node
 	public Node(Node[] children) {
@@ -133,7 +136,45 @@ public class DecisionTree implements Classifier {
 	}
 
 	private void findAllRules() {
-		// TODO: go over tree and collect the rules!
+		Rule curRule;
+		List<Rule> foundRules = new ArrayList<Rule>();
+		Node curNode = this.rootNode;
+		
+	}
+	
+	/**
+	 * Checks if all nodes in nodes array are marked.
+	 * @param nodes
+	 * @return true if all are marked, if one isn't returns false
+	 */
+	private boolean areMarked(Node[] nodes) {
+		for (Node node : nodes) {
+			if (!node.marked) return false;
+		}
+		
+		return true;
+	}
+
+	/**
+	 * Iterate over the tree using a recursive function and returning all leafs
+	 * 
+	 * @return all leafs in the decision tree
+	 */
+	private Node[] findAllLeafs() {
+		List<Node> lst = recFindAllLeafs(this.rootNode);
+		return (Node[]) lst.toArray();
+	}
+
+	private List<Node> recFindAllLeafs(Node node) {
+		List<Node> lst = new ArrayList<Node>();
+		if (node.children.length == 0) {
+			lst.add(node);
+			return lst;
+		}
+		for (int i = 0; i < node.children.length; i++) {
+			lst.addAll(recFindAllLeafs(node.children[i]));
+		}
+		return lst;
 	}
 
 	/**
@@ -452,28 +493,6 @@ public class DecisionTree implements Classifier {
 			numInstanceswithFAndNeg = 0;
 		}
 		return chiSquare;
-	}
-
-	/**
-	 * Iterate over the tree using a recursive function and returning all leafs
-	 * 
-	 * @return all leafs in the decision tree
-	 */
-	private Node[] findAllLeafs() {
-		List<Node> lst = recFindAllLeafs(this.rootNode);
-		return (Node[]) lst.toArray();
-	}
-
-	private List<Node> recFindAllLeafs(Node node) {
-		List<Node> lst = new ArrayList<Node>();
-		if (node.children.length == 0) {
-			lst.add(node);
-			return lst;
-		}
-		for (int i = 0; i < node.children.length; i++) {
-			lst.addAll(recFindAllLeafs(node.children[i]));
-		}
-		return lst;
 	}
 
 	/**
