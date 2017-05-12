@@ -1,7 +1,6 @@
 ﻿package HomeWork2;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
@@ -185,11 +184,13 @@ public class DecisionTree implements Classifier {
 	 * Every leaf corresponds to a Rule. Adding leafs Rule to rules.
 	 */
 	private void setAllRules() {
-		rules = new ArrayList<Rule>();
+		this.rules = null;
+		List<Rule> ruleList = new ArrayList<Rule>();
 		Node[] leafs = findAllLeafs();
 		for (Node leaf : leafs) {
-			rules.add(ruleOfLeaf(leaf));
+			ruleList.add(ruleOfLeaf(leaf));
 		}
+		this.rules = ruleList;
 	}
 
 	/**
@@ -482,15 +483,15 @@ public class DecisionTree implements Classifier {
 	 */
 	private double calcChiSquare(Instances instances, int attributeIndex) {
 		// xj is the attribute at index j (attributeIndex)
-		int numValues = instances.attribute(attributeIndex).numValues();
+		int numValues = instances.numClasses();
 		int numInstances = instances.numInstances();
 		// number of instances for which attribute value at (j) = val(f) [Df]
-		int numInstancesWithCurValue = 0;
+		int df = 0;
 		// Positives: number of instances for which (attVal=f) and (Y = 1) [Pj]
-		int numInstanceswithFAndPos = 0;
+		int pf = 0;
 		// Negatives: number of instances for which (attVal=f) and (Y = 0) [Nj]
-		int numInstanceswithFAndNeg = 0;
-		double posE, negE;
+		int nf = 0;
+		double E0, E1;
 		double chiSquare = 0;
 
 		// probability for classification (1/0)
@@ -500,41 +501,36 @@ public class DecisionTree implements Classifier {
 
 		// going over all possible values for attribute at attributeIndex
 		for (int f = 0; f < numValues; f++) {
+			df = pf = nf = 0;
 			double tempCalc = 0;
+			
 			// calculating number of instances which j attribute value is f
+			// calculate df, nf, pf
 			for (int i = 0; i < numInstances; i++) {
 				Instance curInstance = instances.instance(i);
-				if (curInstance.attribute(attributeIndex).value(f) == instances.attribute(attributeIndex).value(f)) {
-					numInstancesWithCurValue++;
-					if (curInstance.classValue() == 1) {
-						numInstanceswithFAndPos++;
+				if (curInstance.value(attributeIndex) == f) {
+					df++;
+					if (curInstance.classValue() == 0) {
+						pf++;
 					} else {
-						numInstanceswithFAndNeg++;
+						nf++;
 					}
 				}
 			}
-			posE = numInstancesWithCurValue * Py1;
-			negE = numInstancesWithCurValue * Py0;
+			E0 = df * Py1;
+			E1 = df * Py0;
 
 			// making sure not to divide by 0
-			if ((posE != 0) && (negE != 0)) {
-				tempCalc = (Math.pow((numInstanceswithFAndPos - posE), 2) / posE)
-						+ (Math.pow((numInstanceswithFAndNeg - negE), 2) / negE);
-			} else if ((posE != 0) && (negE == 0)) {
-				// will not happen but just in case
-				tempCalc = Math.pow((Math.pow((numInstanceswithFAndPos - posE), 2) / posE), 2);
-			} else if ((posE == 0) && (negE != 0)) {
-				// will not happen but just in case
-				tempCalc = Math.pow((Math.pow((numInstanceswithFAndNeg - negE), 2) / negE), 2);
+			if (df != 0) {
+				tempCalc = (Math.pow((pf - E0), 2) / E0)
+						+ (Math.pow((nf - E1), 2) / E1);
 			} else {
 				// happens when the number of instances where 𝑥𝑗=𝑓 [Df] is 0
 				tempCalc = 0;
 			}
 			// adding calculation to chi square and zeros counters
 			chiSquare += tempCalc;
-			numInstancesWithCurValue = 0;
-			numInstanceswithFAndPos = 0;
-			numInstanceswithFAndNeg = 0;
+			
 		}
 		return chiSquare;
 	}
@@ -551,11 +547,10 @@ public class DecisionTree implements Classifier {
 	private void chiSquarePrunning() {
 		Node[] leafs = findAllLeafs();
 		int numOfLeafs = leafs.length;
-		double chiSquare = Double.MIN_VALUE;
+		double bestChi = Double.MIN_VALUE;
 		// continue pruning while chiSquare is not 95% confidence
-		while (chiSquare < CHI_SQUARE_LIMIT) {
+		while (bestChi < CHI_SQUARE_LIMIT) {
 			Node bestLeaf = leafs[0];
-			double bestChi = Double.MIN_VALUE;
 			// iterating over leafs. take out the leaf with largest chi square.
 			for (int i = 0; i < numOfLeafs; i++) {
 				DecisionTree tempTree = new DecisionTree();
@@ -565,6 +560,7 @@ public class DecisionTree implements Classifier {
 				tempTree.setAllRules();
 				double curChi = tempTree.calcChiSquare(validationSet, 0);
 				if (curChi > bestChi) {
+					System.out.println("PRUNE");
 					// prune this leaf!!!
 					bestLeaf = leafs[i];
 					bestChi = curChi;
@@ -645,7 +641,7 @@ public class DecisionTree implements Classifier {
 		boolean rulesUpdates = true;
 
 		while (rulesUpdates) {
-			for (int i = rulesNum; i >= 0; i--) {
+			for (int i = rulesNum - 1; i >= 0; i--) {
 				// removes a rule from set of rules, check the current
 				// error (without the rule)
 				extractRule = rules.remove(i);
