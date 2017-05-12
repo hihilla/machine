@@ -263,7 +263,7 @@ public class DecisionTree implements Classifier {
 			// counting number of appearances for each classification and
 			// finding the
 			// classification that appears the most (max number of appearances)
-			returnValue = findMax(buildHistogram(instancesClassifications, numOfClassifications));
+			returnValue = findMaxIndex(buildHistogram(instancesClassifications, numOfClassifications));
 		}
 		return returnValue;
 	}
@@ -330,12 +330,12 @@ public class DecisionTree implements Classifier {
 	}
 
 	/**
-	 * Find max value in given array
+	 * Find index of max value in given array
 	 * 
 	 * @param arr
 	 * @return the max value
 	 */
-	private double findMax(double[] arr) {
+	private int findMaxIndex(double[] arr) {
 		double max = arr[0];
 		int maxIndex = 0;
 		for (int i = 1; i < arr.length; i++) {
@@ -551,100 +551,6 @@ public class DecisionTree implements Classifier {
 	}
 
 	/**
-	 * TODO: REMOVE!!! Prunning the tree by using Chi square test in order to
-	 * decide whether to prune a branch of the tree or not. We compare resulted
-	 * Chi square with number from chi squared chart in the row for 8 degrees of
-	 * freedom (which is the number of attributes in the cancer data minus 1)
-	 * and the column for 0.95 confidence level. PAY ATTENTION – where you need
-	 * to perform this test, what you should do if the result is to prune.
-	 */
-	// private void chiSquarePrunning() {
-	// Node[] leafs = findAllLeafs();
-	// int numOfLeafs = leafs.length;
-	// double bestChi = Double.MIN_VALUE;
-	// // continue pruning while chiSquare is not 95% confidence
-	// while (bestChi < CHI_SQUARE_LIMIT) {
-	// Node bestLeaf = leafs[0];
-	// // iterating over leafs. take out the leaf with largest chi square.
-	// DecisionTree tempTree = new DecisionTree();
-	//// tempTree.rootNode =
-	// for (int i = 0; i < numOfLeafs; i++) {
-	// // simulate the prune of this leaf and check for chi square
-	//// tempTree.buildTree(validationSet);
-	// tempTree.removeNode(leafs[i]);
-	// tempTree.setAllRules();
-	// double curChi = tempTree.calcChiSquare(validationSet,
-	// leafs[i].attributeIndex);
-	// System.out.println("chi is " + curChi);
-	// if (curChi > bestChi) {
-	// System.out.println("PRUNE");
-	// // prune this leaf!!!
-	// bestLeaf = leafs[i];
-	// bestChi = curChi;
-	// }
-	// }
-	// // taking out leaf with best chi square
-	// this.removeNode(bestLeaf);
-	// }
-	// // now chi square is at 95% confidence with 8 degrees of freedom
-	// // now re-finding rules and return values
-	// // go over tree and find each Rules returnValue
-	// int numOfRules = this.rules.size();
-	// for (int i = 0; i < numOfRules; i++) {
-	// rules.get(i).returnValue = findReturnValue(validationSet);
-	// }
-	// setAllRules();
-	// }
-
-	/**
-	 * TODO: REMOVE! this belongs to chi!!
-	 * 
-	 * Remove node from tree
-	 * 
-	 * @param node
-	 *            - to remove
-	 */
-	// private void removeNode(Node node) {
-	// Node parent = node.parent;
-	// Node[] siblings = null;
-	// if (parent != null) {
-	// siblings = parent.children;
-	// }
-	// Node[] childs = node.children;
-	// int size = -1;
-	// // if there are no children or no siblings, don't count them!!!
-	// if (childs != null) {
-	// size += childs.length;
-	// }
-	// if (siblings != null) {
-	// size += siblings.length;
-	// }
-	// if (size == -1) {
-	// // no siblings, no children
-	// return;
-	// }
-	// // connect nodes children to the parent
-	// Node[] newChildren = new Node[size];
-	// for (int i = 0; (childs != null) && i < childs.length; i++) {
-	// if (childs[i] != null) {
-	// newChildren[i] = childs[i];
-	// }
-	// }
-	// int i = 0;
-	// if (childs != null) {
-	// i += childs.length;
-	// }
-	// for (int j = 0; (siblings != null) && i < newChildren.length && j <
-	// siblings.length; i++, j++) {
-	// if (siblings[j] != null && siblings[j] != node) {
-	// newChildren[i] = siblings[j];
-	// }
-	// }
-	// parent.children = newChildren;
-	// node.parent = null;
-	// }
-
-	/**
 	 * Pruning the tree by checking if removing a rule improve the result. After
 	 * complete building the tree you will go over all the rules and check if
 	 * removing a rule will improve the error on the validation set. Pick the
@@ -678,12 +584,13 @@ public class DecisionTree implements Classifier {
 				// updates the current best error to be the current error
 				// adds 1 to counter
 				if (currErr < currBestErr) {
-					// System.out.println("inside if");
+					 System.out.println("inside if");
 					currBestErr = currErr;
 					counterOfPruns++;
 					currErr = 1;
 					// there's no improvement, returns the current rule to rules
 				} else {
+					System.out.println("inside ELE#################");
 					rules.add(i, extractRule);
 				}
 			}
@@ -786,7 +693,6 @@ public class DecisionTree implements Classifier {
 		if (moreThenOneRule) {
 			double[] retValues = new double[instance.classAttribute().numValues()];
 			int numOfSuitableRules = suitableRules.size();
-			System.out.println(numOfSuitableRules);
 			// map return values of all rules
 			for (int i = 0; i < numOfSuitableRules; i++) {
 				double value = suitableRules.get(i).returnValue;
@@ -794,7 +700,7 @@ public class DecisionTree implements Classifier {
 			}
 
 			// return the most common return value
-			return findMax(retValues);
+			return findMaxIndex(retValues);
 		} else {
 			// returning the rule that meets the largest number of consecutive
 			// conditions
