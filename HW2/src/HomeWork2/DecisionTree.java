@@ -1,7 +1,6 @@
 ﻿package HomeWork2;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
@@ -56,6 +55,15 @@ class Node {
 		this.children = null;
 		this.attributeIndex = -1;
 	}
+	
+	// Construct a full node
+	public Node(Node[] children, Node parent, int attributeIndex, double returnValue, Rule nodeRule) {
+		this.children = children;
+		this.parent = parent;
+		this.attributeIndex = attributeIndex;
+		this.returnValue = returnValue;
+		this.nodeRule = nodeRule;
+	}	
 }
 
 public class DecisionTree implements Classifier {
@@ -86,8 +94,8 @@ public class DecisionTree implements Classifier {
 		// prune according to pruning mode:
 		switch (m_pruningMode) {
 		case Chi:
-			// chi pruning:
-			chiSquarePrunning();
+			// chi pruning: alreadt pruned!!!
+//			chiSquarePrunning();
 			break;
 		case Rule:
 			// rule pruning:
@@ -118,6 +126,16 @@ public class DecisionTree implements Classifier {
 			// find the returnValue for this leaf:
 			int returnValue = findReturnValue(instances);
 			return new Node(returnValue);
+		}
+		
+		// if prunning mode is chi, check to prune
+		if (m_pruningMode == PruningMode.Chi) {
+			double chiSquare = calcChiSquare(instances, bestAttribute);
+			if (chiSquare < CHI_SQUARE_LIMIT) {
+				// finish tree!
+				int returnValue = findReturnValue(instances);
+				return new Node(returnValue);
+			}
 		}
 
 		// create children for the node
@@ -177,6 +195,7 @@ public class DecisionTree implements Classifier {
 		while (!basicRules.isEmpty()) {
 			leafsRule.add(basicRules.pop());
 		}
+		leafsRule.returnValue = leaf.returnValue;
 		return leafsRule;
 	}
 
@@ -184,11 +203,13 @@ public class DecisionTree implements Classifier {
 	 * Every leaf corresponds to a Rule. Adding leafs Rule to rules.
 	 */
 	private void setAllRules() {
-		rules = new ArrayList<Rule>();
+		this.rules = null;
+		List<Rule> ruleList = new ArrayList<Rule>();
 		Node[] leafs = findAllLeafs();
 		for (Node leaf : leafs) {
-			rules.add(ruleOfLeaf(leaf));
+			ruleList.add(ruleOfLeaf(leaf));
 		}
+		this.rules = ruleList;
 	}
 
 	/**
@@ -438,7 +459,7 @@ public class DecisionTree implements Classifier {
 		// puts the actual probabilities in the array be dividing each
 		// cell of the array by the number of possible values
 		for (int i = 0; i < probabilities.length; i++) {
-			probabilities[i] = probabilities[i] / numValues;
+			probabilities[i] = probabilities[i] / numInstances;
 		}
 		return probabilities;
 	}
@@ -484,12 +505,12 @@ public class DecisionTree implements Classifier {
 		int numValues = instances.attribute(attributeIndex).numValues();
 		int numInstances = instances.numInstances();
 		// number of instances for which attribute value at (j) = val(f) [Df]
-		int numInstancesWithCurValue = 0;
+		int df = 0;
 		// Positives: number of instances for which (attVal=f) and (Y = 1) [Pj]
-		int numInstanceswithFAndPos = 0;
+		int pf = 0;
 		// Negatives: number of instances for which (attVal=f) and (Y = 0) [Nj]
-		int numInstanceswithFAndNeg = 0;
-		double posE, negE;
+		int nf = 0;
+		double E0, E1;
 		double chiSquare = 0;
 
 		// probability for classification (1/0)
@@ -498,47 +519,42 @@ public class DecisionTree implements Classifier {
 		double Py1 = probabilitiesForClass[1];
 
 		// going over all possible values for attribute at attributeIndex
-		for (int f = 0; f < numValues; f++) {
+		for (double f = 0; f < numValues; f++) {
+			df = pf = nf = 0;
 			double tempCalc = 0;
 			// calculating number of instances which j attribute value is f
+			// calculate df, nf, pf
 			for (int i = 0; i < numInstances; i++) {
 				Instance curInstance = instances.instance(i);
-				if (curInstance.attribute(attributeIndex).value(f) == instances.attribute(attributeIndex).value(f)) {
-					numInstancesWithCurValue++;
-					if (curInstance.classValue() == 1) {
-						numInstanceswithFAndPos++;
+				if (curInstance.value(attributeIndex) == (double)f) {
+					df++;
+					if (curInstance.classValue() == 0) {
+						pf++;
 					} else {
-						numInstanceswithFAndNeg++;
+						nf++;
 					}
 				}
 			}
-			posE = numInstancesWithCurValue * Py1;
-			negE = numInstancesWithCurValue * Py0;
-
+			E0 = df * Py1;
+			E1 = df * Py0;
+			
 			// making sure not to divide by 0
-			if ((posE != 0) && (negE != 0)) {
-				tempCalc = (Math.pow((numInstanceswithFAndPos - posE), 2) / posE)
-						+ (Math.pow((numInstanceswithFAndNeg - negE), 2) / negE);
-			} else if ((posE != 0) && (negE == 0)) {
-				// will not happen but just in case
-				tempCalc = Math.pow((Math.pow((numInstanceswithFAndPos - posE), 2) / posE), 2);
-			} else if ((posE == 0) && (negE != 0)) {
-				// will not happen but just in case
-				tempCalc = Math.pow((Math.pow((numInstanceswithFAndNeg - negE), 2) / negE), 2);
+			if (df != 0) {
+				tempCalc = (Math.pow((pf - E0), 2) / E0)
+						+ (Math.pow((nf - E1), 2) / E1);
 			} else {
 				// happens when the number of instances where 𝑥𝑗=𝑓 [Df] is 0
 				tempCalc = 0;
 			}
 			// adding calculation to chi square and zeros counters
 			chiSquare += tempCalc;
-			numInstancesWithCurValue = 0;
-			numInstanceswithFAndPos = 0;
-			numInstanceswithFAndNeg = 0;
+			
 		}
 		return chiSquare;
 	}
 
 	/**
+	 * TODO: REMOVE!!!
 	 * Prunning the tree by using Chi square test in order to decide whether to
 	 * prune a branch of the tree or not. We compare resulted Chi square with
 	 * number from chi squared chart in the row for 8 degrees of freedom (which
@@ -547,78 +563,87 @@ public class DecisionTree implements Classifier {
 	 * PAY ATTENTION – where you need to perform this test, what you should
 	 * do if the result is to prune.
 	 */
-	private void chiSquarePrunning() {
-		Node[] leafs = findAllLeafs();
-		int numOfLeafs = leafs.length;
-		double chiSquare = Double.MIN_VALUE;
-		// continue pruning while chiSquare is not 95% confidence
-		while (chiSquare < CHI_SQUARE_LIMIT) {
-			Node bestLeaf = leafs[0];
-			double bestChi = Double.MIN_VALUE;
-			// iterating over leafs. take out the leaf with largest chi square.
-			for (int i = 0; i < numOfLeafs; i++) {
-				DecisionTree tempTree = new DecisionTree();
-				// simulate the prune of this leaf and check for chi square
-				tempTree.buildTree(validationSet);
-				tempTree.removeNode(leafs[i]);
-				tempTree.setAllRules();
-				double curChi = tempTree.calcChiSquare(validationSet, 0);
-				if (curChi > bestChi) {
-					// prune this leaf!!!
-					bestLeaf = leafs[i];
-					bestChi = curChi;
-				}
-			}
-			// taking out leaf with best chi square
-			this.removeNode(bestLeaf);
-		}
-		// now chi square is at 95% confidence with 8 degrees of freedom
-		// now re-finding rules and return values
-		// go over tree and find each Rules returnValue
-		int numOfRules = this.rules.size();
-		for (int i = 0; i < numOfRules; i++) {
-			rules.get(i).returnValue = findReturnValue(validationSet);
-		}
-	}
-
-	private void removeNode(Node node) {
-		Node parent = node.parent;
-		Node[] siblings = null;
-		if (parent != null) {
-			siblings = parent.children;
-		}
-		Node[] childs = node.children;
-		int size = -1;
-		// if there are no children or no siblings, don't count them!!!
-		if (childs != null) {
-			size += childs.length;
-		}
-		if (siblings != null) {
-			size += siblings.length;
-		}
-		if (size == -1) {
-			// no siblings, no children
-			return;
-		}
-		// connect nodes children to the parent
-		Node[] newChildren = new Node[size];
-		for (int i = 0; (childs != null) && i < childs.length; i++) {
-			if (childs[i] != null) {
-				newChildren[i] = childs[i];
-			}
-		}
-		int i = 0;
-		if (childs != null) {
-			i += childs.length;
-		}
-		for (int j = 0; (siblings != null) && i < newChildren.length && j < siblings.length; i++, j++) {
-			if (siblings[j] != null && siblings[j] != node) {
-				newChildren[i] = siblings[j];
-			}
-		}
-		parent.children = newChildren;
-		node.parent = null;
-	}
+//	private void chiSquarePrunning() {
+//		Node[] leafs = findAllLeafs();
+//		int numOfLeafs = leafs.length;
+//		double bestChi = Double.MIN_VALUE;
+//		// continue pruning while chiSquare is not 95% confidence
+//		while (bestChi < CHI_SQUARE_LIMIT) {
+//			Node bestLeaf = leafs[0];
+//			// iterating over leafs. take out the leaf with largest chi square.
+//			DecisionTree tempTree = new DecisionTree();
+////			tempTree.rootNode = 
+//			for (int i = 0; i < numOfLeafs; i++) {
+//				// simulate the prune of this leaf and check for chi square
+////				tempTree.buildTree(validationSet);
+//				tempTree.removeNode(leafs[i]);
+//				tempTree.setAllRules();
+//				double curChi = tempTree.calcChiSquare(validationSet, leafs[i].attributeIndex);
+//				System.out.println("chi is " + curChi);
+//				if (curChi > bestChi) {
+//					System.out.println("PRUNE");
+//					// prune this leaf!!!
+//					bestLeaf = leafs[i];
+//					bestChi = curChi;
+//				}
+//			}
+//			// taking out leaf with best chi square
+//			this.removeNode(bestLeaf);
+//		}
+//		// now chi square is at 95% confidence with 8 degrees of freedom
+//		// now re-finding rules and return values
+//		// go over tree and find each Rules returnValue
+//		int numOfRules = this.rules.size();
+//		for (int i = 0; i < numOfRules; i++) {
+//			rules.get(i).returnValue = findReturnValue(validationSet);
+//		}
+//		setAllRules();
+//	}
+	
+	/**
+	 * TODO: REMOVE! this belongs to chi!!
+	 * 
+	 * Remove node from tree
+	 * @param node - to remove
+	 */
+//	private void removeNode(Node node) {
+//		Node parent = node.parent;
+//		Node[] siblings = null;
+//		if (parent != null) {
+//			siblings = parent.children;
+//		}
+//		Node[] childs = node.children;
+//		int size = -1;
+//		// if there are no children or no siblings, don't count them!!!
+//		if (childs != null) {
+//			size += childs.length;
+//		}
+//		if (siblings != null) {
+//			size += siblings.length;
+//		}
+//		if (size == -1) {
+//			// no siblings, no children
+//			return;
+//		}
+//		// connect nodes children to the parent
+//		Node[] newChildren = new Node[size];
+//		for (int i = 0; (childs != null) && i < childs.length; i++) {
+//			if (childs[i] != null) {
+//				newChildren[i] = childs[i];
+//			}
+//		}
+//		int i = 0;
+//		if (childs != null) {
+//			i += childs.length;
+//		}
+//		for (int j = 0; (siblings != null) && i < newChildren.length && j < siblings.length; i++, j++) {
+//			if (siblings[j] != null && siblings[j] != node) {
+//				newChildren[i] = siblings[j];
+//			}
+//		}
+//		parent.children = newChildren;
+//		node.parent = null;
+//	}
 
 	/**
 	 * Pruning the tree by checking if removing a rule improve the result. After
@@ -765,7 +790,7 @@ public class DecisionTree implements Classifier {
 				boolean meetRule = true;
 				BasicRule curBasicRule = curRule.basicRule.get(0);
 				for (int j = 0; j < curRule.basicRule.size() && meetRule; j++) {
-					curBasicRule = curRule.basicRule.get(i);
+					curBasicRule = curRule.basicRule.get(j);
 					if (curBasicRule.attributeValue != instance.value(curBasicRule.attributeIndex)) {
 						// an unfulfilled basic rule met!
 						meetRule = false;

@@ -50,11 +50,15 @@ public class MainHW2 {
 		treeWithNoPrunning.setPruningMode(PruningMode.None);
 		treeWithNoPrunning.setValidation(validationCancer);
 		treeWithNoPrunning.buildClassifier(trainingCancer);
+		System.out.println("no prunning avg error");
+		System.out.println(treeWithNoPrunning.calcAvgError(testingCancer));
 		
 		DecisionTree treeWithChiPruning = new DecisionTree();
 		treeWithChiPruning.setPruningMode(PruningMode.Chi);
 		treeWithChiPruning.setValidation(validationCancer);
 		treeWithChiPruning.buildClassifier(trainingCancer);
+		System.out.println("chi prunning avg error");
+		System.out.println(treeWithChiPruning.calcAvgError(testingCancer));
 		
 		DecisionTree treeWithRulePruning = new DecisionTree();
 		treeWithRulePruning.setPruningMode(PruningMode.Rule);
