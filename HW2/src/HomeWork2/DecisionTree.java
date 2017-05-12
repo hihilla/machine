@@ -85,7 +85,6 @@ public class DecisionTree implements Classifier {
 	private PruningMode m_pruningMode;
 	Instances validationSet;
 	private List<Rule> rules = new ArrayList<Rule>();
-
 	private final double CHI_SQUARE_LIMIT = 15.51;
 
 	@Override
@@ -103,7 +102,7 @@ public class DecisionTree implements Classifier {
 		// prune according to pruning mode:
 		switch (m_pruningMode) {
 		case Chi:
-			// chi pruning: alreadt pruned!!!
+			// chi pruning: already pruned!!!
 			// chiSquarePrunning();
 			break;
 		case Rule:
@@ -123,68 +122,21 @@ public class DecisionTree implements Classifier {
 	 * @param instances
 	 */
 	private Node buildTree(Instances instances) {
-		
-//		Node node = new Node();
-//		
-//		// if there are no instances at this point:
-//		if (instances.size() < 1) {
-//			return node;
-//		}
-//		// find attribute that gives best info gain
-//		int bestAttribute = findBestAttribute(instances);
-//		
-//		// Make leaf if information gain is zero. 
-//		// Otherwise create successors.
-//		if (calcEntropy(calcProbabilities(instances)) == 0.0) {
-//			// leaf
-//			node.returnValue = findReturnValue(instances);
-//		} else {
-//			// divide instances to children
-//			Instances[] divideInstances = new Instances[instances.attribute(bestAttribute).numValues()];
-//			for (int i = 0; i < divideInstances.length; i++) {
-//				divideInstances[i] = generateSubsetInstances(instances, bestAttribute, i);
-//			}
-//			// create children for the node
-//			int numOfChildren = 0;
-//			for (int i = 0; i < divideInstances.length; i++) {
-//				if (divideInstances[i].size() != 0) {
-//					numOfChildren++;
-//				}
-//			}
-//			Node[] children = new Node[numOfChildren];
-//			node.children = children;
-//			// generate sub-trees:
-//			for (int i = 0; i < numOfChildren; i++) {
-//				if (divideInstances[i].size() <2 ) {
-//					children[i] = buildTree(divideInstances[i]);
-//					// find return value for children
-//					double returnValue = findReturnValue(instances);
-//					children[i].returnValue = returnValue;
-//					children[i].parent = node;
-//					children[i].attributeIndex = bestAttribute;
-//					BasicRule childRule = new BasicRule(bestAttribute, i);
-//					children[i].nodeRule.add(childRule);
-//				}
-//			}
-//			
-//		}
-//		
-//		
-//		return node;
-		
 		int numAttributes = instances.numAttributes();
 
 		// getting best attribute
 		int bestAttribute = findBestAttribute(instances);
-
-		if (sameAttributeValue(instances, bestAttribute) || sameClassValue(instances)) {
+//		System.out.println(calcEntropy(calcProbabilities(instances)));
+//		System.out.println(instances.size());
+		System.out.println(sameAttributeValue(instances, bestAttribute));
+		if (sameClassValue(instances)) {
 			// all instances are getting same classification, this node is a
 			// leaf.
 			// find the returnValue for this leaf:
 			double returnValue = findReturnValue(instances);
 			return new Node(returnValue);
 		}
-
+		
 		// if prunning mode is chi, check to prune
 		if (m_pruningMode == PruningMode.Chi) {
 			double chiSquare = calcChiSquare(instances, bestAttribute);
@@ -325,9 +277,9 @@ public class DecisionTree implements Classifier {
 		}
 		return returnValue;
 	}
-
+	
 	/**
-	 * Checking if all given instances has the same attribute values for each
+	 * Checking if all given instances has the same attribute values for a
 	 * attribute.
 	 * 
 	 * @param instances
@@ -427,12 +379,12 @@ public class DecisionTree implements Classifier {
 	 */
 	private int findBestAttribute(Instances instances) {
 		int numAttributes = instances.numAttributes();
-		int bestAttribute = 0;
-		double goodInfoGain = calcInfoGain(instances, 0);
-		for (int i = 1; i < numAttributes; i++) {
+		int bestAttribute = -1;
+		double goodInfoGain = -1;
+		for (int i = 0; i < numAttributes; i++) {
 			if (i != instances.classIndex()) {
 				double tempInfoGain = calcInfoGain(instances, i);
-				if (tempInfoGain < goodInfoGain) {
+				if (tempInfoGain > goodInfoGain) {
 					goodInfoGain = tempInfoGain;
 					bestAttribute = i;
 				}
@@ -491,10 +443,11 @@ public class DecisionTree implements Classifier {
 		for (int i = 0; i < numOfValues; i++) {
 			if (probabilities[i] != 0) {
 				tempValProb = probabilities[i];
-				entropy += (-1) * ((tempValProb * (Math.log(tempValProb) / Math.log(2.0))));
+//				entropy += (-1) * ((tempValProb * (Math.log(tempValProb) / Math.log(2.0))));
+				entropy += (tempValProb * (Math.log(tempValProb) / Math.log(2)));
 			}
 		}
-
+		entropy *= (-1);
 		return entropy;
 	}
 
@@ -515,6 +468,9 @@ public class DecisionTree implements Classifier {
 		// number of instances in the instances set
 		int numInstances = instances.numInstances();
 		double[] probabilities = new double[numValues];
+		for (int i = 0; i < probabilities.length; i++) {
+			probabilities[i] = 0;
+		}
 
 		// if there are no instances, returns meaningless array
 		if (numInstances < 1) {
