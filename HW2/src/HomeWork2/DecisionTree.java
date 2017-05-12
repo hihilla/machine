@@ -658,7 +658,7 @@ public class DecisionTree implements Classifier {
 	 */
 	private void rulePrunning() {
 		// number of rules
-		int rulesNum = rules.size();
+		int rulesNum = this.rules.size();
 		// current best error
 		double currBestErr = calcAvgError(validationSet);
 		// to hold error after removing a single rule
@@ -667,20 +667,29 @@ public class DecisionTree implements Classifier {
 		Rule extractRule;
 		int counterOfPruns = 0;
 		boolean rulesUpdates = true;
+		//System.out.println("before loop numRules " + rulesNum);
 
 		while (rulesUpdates) {
 			for (int i = rulesNum - 1; i >= 0; i--) {
 				// removes a rule from set of rules, check the current
 				// error (without the rule)
+				System.out.println("before taking " + rules.size());
 				extractRule = rules.remove(i);
+				System.out.println(extractRule.toString());
+				// System.out.println("i is " + i);
+				System.out.println("num of rules: " + rules.size());
 				currErr = calcAvgError(validationSet);
+				System.out.println(currErr + " " + currBestErr);
+				
 				// if there was an improvement:
 				// updates the current best error to be the current error
 				// adds 1 to counter
 				if (currErr < currBestErr) {
+					System.out.println("inside if");
 					currBestErr = currErr;
 					counterOfPruns++;
-					// there's no improvement, returns the current rule to rules
+					currErr = 1;
+				// there's no improvement, returns the current rule to rules
 				} else {
 					rules.add(i, extractRule);
 				}
@@ -689,10 +698,13 @@ public class DecisionTree implements Classifier {
 			// rules possible and wer're done
 			// (else, gets into another iteration of pruning)
 			if (counterOfPruns == 0) {
+				System.out.println("final size of rules " + rules.size());
 				rulesUpdates = false;
-			}
-			// updates the size of the rules list towards next iteration
-			rulesNum = rules.size();
+			} else {
+				// updates the size of the rules list towards next iteration
+				rulesNum = rules.size();
+				counterOfPruns = 0;
+			}	
 		}
 	}
 
