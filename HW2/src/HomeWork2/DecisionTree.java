@@ -1,6 +1,7 @@
 ﻿package HomeWork2;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
@@ -627,7 +628,7 @@ public class DecisionTree implements Classifier {
 	public double classifyInstance(Instance instance) {
 		int numRules = this.rules.size();
 		int numBasicRules;
-
+		
 		// Trying to find a Rule that applies.
 		// If not applying a basic rule in the current Rule,
 		// stop with this Rule and continue to next Rule.
