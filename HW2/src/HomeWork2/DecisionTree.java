@@ -669,6 +669,7 @@ public class DecisionTree implements Classifier {
 	 * @param validationSet
 	 */
 	private void rulePrunning() {
+		/*
 		double bestErr = calcAvgError(validationSet);
 		double[] errors = new double[rules.size()];
 		Rule extractedRule;
@@ -685,9 +686,6 @@ public class DecisionTree implements Classifier {
 			}
 			// finds the index of the rule that has the minimal error rate
 			int bestErrIndex = findMinIndex(errors);
-			System.out.println("min index: "+ bestErrIndex);
-			System.out.println("best error in this index: " + errors[bestErrIndex]);
-			System.out.println("best error so far: "+bestErr);
 			// if the error improves without that rule comparing to
 			// error with all rules, updates data, removes that rule and carries on
 			if (errors[bestErrIndex] < bestErr){
@@ -698,10 +696,8 @@ public class DecisionTree implements Classifier {
 			} else {
 				isPrune = false;
 			}
-		}
+		}*/
 				
-		
-		/*
 		// number of rules
 		int rulesNum = this.rules.size();
 		// current best error
@@ -744,7 +740,7 @@ public class DecisionTree implements Classifier {
 				rulesNum = rules.size();
 				counterOfPruns = 0;
 			}
-		}*/
+		}
 	}
 
 	public void setPruningMode(PruningMode pruningMode) {
