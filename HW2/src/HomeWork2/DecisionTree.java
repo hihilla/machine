@@ -667,19 +667,18 @@ public class DecisionTree implements Classifier {
 		Rule extractRule;
 		int counterOfPruns = 0;
 		boolean rulesUpdates = true;
-		//System.out.println("before loop numRules " + rulesNum);
-
+		
 		while (rulesUpdates) {
 			for (int i = rulesNum - 1; i >= 0; i--) {
 				// removes a rule from set of rules, check the current
 				// error (without the rule)
-				System.out.println("before taking " + rules.size());
+				//System.out.println("before taking " + rules.size());
 				extractRule = rules.remove(i);
-				System.out.println(extractRule.toString());
+				//System.out.println(extractRule.toString());
 				// System.out.println("i is " + i);
-				System.out.println("num of rules: " + rules.size());
+				//System.out.println("num of rules: " + rules.size());
 				currErr = calcAvgError(validationSet);
-				System.out.println(currErr + " " + currBestErr);
+				//System.out.println(currErr + " " + currBestErr);
 				
 				// if there was an improvement:
 				// updates the current best error to be the current error
@@ -688,7 +687,6 @@ public class DecisionTree implements Classifier {
 					System.out.println("inside if");
 					currBestErr = currErr;
 					counterOfPruns++;
-					currErr = 1;
 				// there's no improvement, returns the current rule to rules
 				} else {
 					rules.add(i, extractRule);
@@ -780,6 +778,7 @@ public class DecisionTree implements Classifier {
 				largestNumOfConsecutiveConditions = curConsecutiveCondition;
 				mostSuitableRule = curRule;
 				suitableRules = new ArrayList<Rule>();
+				//System.out.println("the best we could find " + suitableRules.size());
 			} else if (curConsecutiveCondition == largestNumOfConsecutiveConditions) {
 				// same number of consecutive conditions as a previous Rule
 				// adding this Rule to list of Rules
@@ -792,6 +791,7 @@ public class DecisionTree implements Classifier {
 			// previous step
 			// classify with the majority of the returning values of those rules
 			int numOfRules = suitableRules.size();
+			System.out.println("num of rule that may apply " + numOfRules);
 			int minNumOfRules = Integer.MAX_VALUE;
 			mostSuitableRule = suitableRules.get(0);
 			int numOfRulesToEnd = 0;
@@ -817,7 +817,7 @@ public class DecisionTree implements Classifier {
 					// if this Rule is closer to the end (to a leaf) then the
 					// previous
 					// best rule, keep it (to return at the end)
-					numOfRulesToEnd = minNumOfRules;
+					minNumOfRules = numOfRulesToEnd;
 					mostSuitableRule = curRule;
 				}
 			}
