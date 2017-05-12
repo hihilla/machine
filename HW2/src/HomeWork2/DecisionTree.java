@@ -537,6 +537,41 @@ public class DecisionTree implements Classifier {
 	}
 
 	/**
+	 * 
+	 * calc probabilities for all possible values of a given attribute
+	 * @param instances set of instances to check probabilities for
+	 * @param attributeIndex the attribute to be checked
+	 * @return array of probabilities of each value
+	 */
+
+	private double[] calcAttibuteProbabilities(Instances instances, int attributeIndex) {
+		// number of possible attributes
+		int numValues = instances.numAttributes();
+		// number of instances in the instances set
+		int numInstances = instances.numInstances();
+		double[] probabilities = new double[numValues];
+
+		// if there are no instances, returns meaningless array
+		if (numInstances < 1) {
+			return probabilities;
+		}
+
+		// goes through all instances and gets for each the value
+		// of the attribute, stores the info in the cell of the array
+		// that corresponds to that possible value
+		for (int i = 0; i < numInstances; i++) {
+			probabilities[(int) instances.instance(i).value(attributeIndex)]++;
+		}
+		
+		// puts the actual probabilities in the array be dividing each
+		// cell of the array by the number of possible values
+		for (int i = 0; i < probabilities.length; i++) {
+			probabilities[i] = probabilities[i] / numInstances;
+		}
+		return probabilities;
+	}
+
+	/**
 	 * Generates a subset of instances for which the attribute value at
 	 * attributeIndex is attributeValue. Meaning for every instance in subset
 	 * the value at the given attribute is equal to the given value.
