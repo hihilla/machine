@@ -46,21 +46,23 @@ public class MainHW2 {
 		Instances validationCancer = loadData("cancer_validation.txt");
 
 		// builds Decision Trees each time with different pruning method
-		/*
-		 * DecisionTree treeWithNoPrunning = new DecisionTree();
-		 * treeWithNoPrunning.setPruningMode(PruningMode.None);
-		 * treeWithNoPrunning.setValidation(validationCancer);
-		 * treeWithNoPrunning.buildClassifier(trainingCancer);
-		 * System.out.println("no prunning avg error");
-		 * System.out.println(treeWithNoPrunning.calcAvgError(testingCancer));
-		 * System.out.println(); DecisionTree treeWithChiPruning = new
-		 * DecisionTree(); treeWithChiPruning.setPruningMode(PruningMode.Chi);
-		 * treeWithChiPruning.setValidation(validationCancer);
-		 * treeWithChiPruning.buildClassifier(trainingCancer);
-		 * System.out.println("chi prunning avg error");
-		 * System.out.println(treeWithChiPruning.calcAvgError(testingCancer));
-		 * System.out.println();
-		 */
+
+		DecisionTree treeWithNoPrunning = new DecisionTree();
+		treeWithNoPrunning.setPruningMode(PruningMode.None);
+		treeWithNoPrunning.setValidation(validationCancer);
+		treeWithNoPrunning.buildClassifier(trainingCancer);
+		System.out.println("no prunning avg error");
+		System.out.println(treeWithNoPrunning.calcAvgError(testingCancer));
+		System.out.println();
+		
+		DecisionTree treeWithChiPruning = new DecisionTree();
+		treeWithChiPruning.setPruningMode(PruningMode.Chi);
+		treeWithChiPruning.setValidation(validationCancer);
+		treeWithChiPruning.buildClassifier(trainingCancer);
+		System.out.println("chi prunning avg error");
+		System.out.println(treeWithChiPruning.calcAvgError(testingCancer));
+		System.out.println();
+
 		DecisionTree treeWithRulePruning = new DecisionTree();
 		treeWithRulePruning.setPruningMode(PruningMode.Rule);
 		treeWithRulePruning.setValidation(validationCancer);
