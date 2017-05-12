@@ -55,6 +55,15 @@ class Node {
 		this.children = null;
 		this.attributeIndex = -1;
 	}
+	
+	// Construct a full node
+	public Node(Node[] children, Node parent, int attributeIndex, double returnValue, Rule nodeRule) {
+		this.children = children;
+		this.parent = parent;
+		this.attributeIndex = attributeIndex;
+		this.returnValue = returnValue;
+		this.nodeRule = nodeRule;
+	}	
 }
 
 public class DecisionTree implements Classifier {
@@ -85,8 +94,8 @@ public class DecisionTree implements Classifier {
 		// prune according to pruning mode:
 		switch (m_pruningMode) {
 		case Chi:
-			// chi pruning:
-			chiSquarePrunning();
+			// chi pruning: alreadt pruned!!!
+//			chiSquarePrunning();
 			break;
 		case Rule:
 			// rule pruning:
@@ -117,6 +126,16 @@ public class DecisionTree implements Classifier {
 			// find the returnValue for this leaf:
 			int returnValue = findReturnValue(instances);
 			return new Node(returnValue);
+		}
+		
+		// if prunning mode is chi, check to prune
+		if (m_pruningMode == PruningMode.Chi) {
+			double chiSquare = calcChiSquare(instances, bestAttribute);
+			if (chiSquare < CHI_SQUARE_LIMIT) {
+				// finish tree!
+				int returnValue = findReturnValue(instances);
+				return new Node(returnValue);
+			}
 		}
 
 		// create children for the node
@@ -440,7 +459,7 @@ public class DecisionTree implements Classifier {
 		// puts the actual probabilities in the array be dividing each
 		// cell of the array by the number of possible values
 		for (int i = 0; i < probabilities.length; i++) {
-			probabilities[i] = probabilities[i] / numValues;
+			probabilities[i] = probabilities[i] / numInstances;
 		}
 		return probabilities;
 	}
@@ -483,7 +502,7 @@ public class DecisionTree implements Classifier {
 	 */
 	private double calcChiSquare(Instances instances, int attributeIndex) {
 		// xj is the attribute at index j (attributeIndex)
-		int numValues = instances.numClasses();
+		int numValues = instances.attribute(attributeIndex).numValues();
 		int numInstances = instances.numInstances();
 		// number of instances for which attribute value at (j) = val(f) [Df]
 		int df = 0;
@@ -500,15 +519,14 @@ public class DecisionTree implements Classifier {
 		double Py1 = probabilitiesForClass[1];
 
 		// going over all possible values for attribute at attributeIndex
-		for (int f = 0; f < numValues; f++) {
+		for (double f = 0; f < numValues; f++) {
 			df = pf = nf = 0;
 			double tempCalc = 0;
-			
 			// calculating number of instances which j attribute value is f
 			// calculate df, nf, pf
 			for (int i = 0; i < numInstances; i++) {
 				Instance curInstance = instances.instance(i);
-				if (curInstance.value(attributeIndex) == f) {
+				if (curInstance.value(attributeIndex) == (double)f) {
 					df++;
 					if (curInstance.classValue() == 0) {
 						pf++;
@@ -519,7 +537,7 @@ public class DecisionTree implements Classifier {
 			}
 			E0 = df * Py1;
 			E1 = df * Py0;
-
+			
 			// making sure not to divide by 0
 			if (df != 0) {
 				tempCalc = (Math.pow((pf - E0), 2) / E0)
@@ -552,13 +570,15 @@ public class DecisionTree implements Classifier {
 		while (bestChi < CHI_SQUARE_LIMIT) {
 			Node bestLeaf = leafs[0];
 			// iterating over leafs. take out the leaf with largest chi square.
+			DecisionTree tempTree = new DecisionTree();
+//			tempTree.rootNode = 
 			for (int i = 0; i < numOfLeafs; i++) {
-				DecisionTree tempTree = new DecisionTree();
 				// simulate the prune of this leaf and check for chi square
-				tempTree.buildTree(validationSet);
+//				tempTree.buildTree(validationSet);
 				tempTree.removeNode(leafs[i]);
 				tempTree.setAllRules();
-				double curChi = tempTree.calcChiSquare(validationSet, 0);
+				double curChi = tempTree.calcChiSquare(validationSet, leafs[i].attributeIndex);
+				System.out.println("chi is " + curChi);
 				if (curChi > bestChi) {
 					System.out.println("PRUNE");
 					// prune this leaf!!!
@@ -576,8 +596,9 @@ public class DecisionTree implements Classifier {
 		for (int i = 0; i < numOfRules; i++) {
 			rules.get(i).returnValue = findReturnValue(validationSet);
 		}
+		setAllRules();
 	}
-
+	
 	private void removeNode(Node node) {
 		Node parent = node.parent;
 		Node[] siblings = null;
