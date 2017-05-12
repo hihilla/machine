@@ -347,18 +347,18 @@ public class DecisionTree implements Classifier {
 		}
 		return maxIndex;
 	}
-	
-	private int findMinIndex(double[] arr) {
+
+	/*private int findMinIndex(double[] arr) {
 		double min = arr[0];
 		int minIndex = 0;
-		for (int i = 0; i < arr.length; i++){
-			if (arr[i] < min){
+		for (int i = 0; i < arr.length; i++) {
+			if (arr[i] < min) {
 				min = arr[i];
 				minIndex = i;
 			}
 		}
 		return minIndex;
-	}
+	}*/
 
 	/**
 	 * Calculate info gain for each attribute and find the attribute that gives
@@ -373,7 +373,7 @@ public class DecisionTree implements Classifier {
 		double goodInfoGain = calcInfoGain(instances, 0);
 		for (int i = 1; i < numAttributes; i++) {
 			double tempInfoGain = calcInfoGain(instances, i);
-			if (tempInfoGain < goodInfoGain) {
+			if (tempInfoGain < goodInfoGain){
 				goodInfoGain = tempInfoGain;
 				bestAttribute = i;
 			}
@@ -669,35 +669,6 @@ public class DecisionTree implements Classifier {
 	 * @param validationSet
 	 */
 	private void rulePrunning() {
-		/*
-		double bestErr = calcAvgError(validationSet);
-		double[] errors = new double[rules.size()];
-		Rule extractedRule;
-		boolean isPrune = true;
-		
-		while (isPrune){
-			//checks the error rate for the entire set of rules
-			//without the i'th rule
-			for (int i = 0; i < errors.length; i++){
-				extractedRule = rules.remove(i);
-				errors[i] = calcAvgError(validationSet);
-				System.out.println("this error: " + errors[i]);
-				rules.add(i, extractedRule);
-			}
-			// finds the index of the rule that has the minimal error rate
-			int bestErrIndex = findMinIndex(errors);
-			// if the error improves without that rule comparing to
-			// error with all rules, updates data, removes that rule and carries on
-			if (errors[bestErrIndex] < bestErr){
-				rules.remove(bestErrIndex);
-				bestErr = errors[bestErrIndex];
-				errors = new double[rules.size()];
-			// if there wasn't an improvement, the pruning process is over
-			} else {
-				isPrune = false;
-			}
-		}*/
-				
 		// number of rules
 		int rulesNum = this.rules.size();
 		// current best error
@@ -708,32 +679,30 @@ public class DecisionTree implements Classifier {
 		Rule extractRule;
 		int counterOfPruns = 0;
 		boolean rulesUpdates = true;
-		// System.out.println("before loop numRules " + rulesNum);
 
 		while (rulesUpdates) {
 			for (int i = rulesNum - 1; i >= 0; i--) {
 				// removes a rule from set of rules, check the current
 				// error (without the rule)
+				//System.out.println("i is " + i);
 				extractRule = rules.remove(i);
 				currErr = calcAvgError(validationSet);
 				// if there was an improvement:
 				// updates the current best error to be the current error
 				// adds 1 to counter
 				if (currErr < currBestErr) {
-					// System.out.println("inside if");
 					currBestErr = currErr;
 					counterOfPruns++;
-					currErr = 1;
 					// there's no improvement, returns the current rule to rules
 				} else {
 					rules.add(i, extractRule);
 				}
 			}
+
 			// if there are no updates, this is the best set of
 			// rules possible and wer're done
 			// (else, gets into another iteration of pruning)
 			if (counterOfPruns == 0) {
-				System.out.println("final size of rules " + rules.size());
 				rulesUpdates = false;
 			} else {
 				// updates the size of the rules list towards next iteration
@@ -762,7 +731,7 @@ public class DecisionTree implements Classifier {
 	public double classifyInstance(Instance instance) {
 		int numRules = this.rules.size();
 		int numBasicRules;
-		
+
 		// Trying to find a Rule that applies.
 		// If not applying a basic rule in the current Rule,
 		// stop with this Rule and continue to next Rule.
@@ -828,7 +797,7 @@ public class DecisionTree implements Classifier {
 		if (moreThenOneRule) {
 			double[] retValues = new double[instance.classAttribute().numValues()];
 			int numOfSuitableRules = suitableRules.size();
-//			System.out.println(numOfSuitableRules);
+			// System.out.println(numOfSuitableRules);
 			// map return values of all rules
 			for (int i = 0; i < numOfSuitableRules; i++) {
 				double value = suitableRules.get(i).returnValue;
@@ -860,7 +829,6 @@ public class DecisionTree implements Classifier {
 		for (int i = 0; i < numInstances; i++) {
 			Instance curInstance = instances.instance(i);
 			// if real value differs from predicted value, its a mistake!
-			double val = classifyInstance(curInstance);
 			if (curInstance.classValue() != classifyInstance(curInstance)) {
 				numMistake++;
 			}
