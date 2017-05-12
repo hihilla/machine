@@ -56,6 +56,14 @@ class Node {
 		this.children = null;
 		this.attributeIndex = -1;
 	}
+	
+	// Construct an empty node
+		public Node() {
+			this.parent = null;
+			this.returnValue = -1;
+			this.children = null;
+			this.attributeIndex = -1;
+		}
 
 	// Construct a full node
 	public Node(Node[] children, Node parent, int attributeIndex, double returnValue, Rule nodeRule) {
@@ -115,10 +123,59 @@ public class DecisionTree implements Classifier {
 	 * @param instances
 	 */
 	private Node buildTree(Instances instances) {
+		
+//		Node node = new Node();
+//		
+//		// if there are no instances at this point:
+//		if (instances.size() < 1) {
+//			return node;
+//		}
+//		// find attribute that gives best info gain
+//		int bestAttribute = findBestAttribute(instances);
+//		
+//		// Make leaf if information gain is zero. 
+//		// Otherwise create successors.
+//		if (calcEntropy(calcProbabilities(instances)) == 0.0) {
+//			// leaf
+//			node.returnValue = findReturnValue(instances);
+//		} else {
+//			// divide instances to children
+//			Instances[] divideInstances = new Instances[instances.attribute(bestAttribute).numValues()];
+//			for (int i = 0; i < divideInstances.length; i++) {
+//				divideInstances[i] = generateSubsetInstances(instances, bestAttribute, i);
+//			}
+//			// create children for the node
+//			int numOfChildren = 0;
+//			for (int i = 0; i < divideInstances.length; i++) {
+//				if (divideInstances[i].size() != 0) {
+//					numOfChildren++;
+//				}
+//			}
+//			Node[] children = new Node[numOfChildren];
+//			node.children = children;
+//			// generate sub-trees:
+//			for (int i = 0; i < numOfChildren; i++) {
+//				if (divideInstances[i].size() <2 ) {
+//					children[i] = buildTree(divideInstances[i]);
+//					// find return value for children
+//					double returnValue = findReturnValue(instances);
+//					children[i].returnValue = returnValue;
+//					children[i].parent = node;
+//					children[i].attributeIndex = bestAttribute;
+//					BasicRule childRule = new BasicRule(bestAttribute, i);
+//					children[i].nodeRule.add(childRule);
+//				}
+//			}
+//			
+//		}
+//		
+//		
+//		return node;
+		
 		int numAttributes = instances.numAttributes();
 
 		// getting best attribute
-		int bestAttribute = findBestAttribute(instances, numAttributes);
+		int bestAttribute = findBestAttribute(instances);
 
 		if (sameAttributeValue(instances, bestAttribute) || sameClassValue(instances)) {
 			// all instances are getting same classification, this node is a
@@ -368,14 +425,17 @@ public class DecisionTree implements Classifier {
 	 * @param numAttributes
 	 * @return
 	 */
-	private int findBestAttribute(Instances instances, int numAttributes) {
+	private int findBestAttribute(Instances instances) {
+		int numAttributes = instances.numAttributes();
 		int bestAttribute = 0;
 		double goodInfoGain = calcInfoGain(instances, 0);
 		for (int i = 1; i < numAttributes; i++) {
-			double tempInfoGain = calcInfoGain(instances, i);
-			if (tempInfoGain < goodInfoGain) {
-				goodInfoGain = tempInfoGain;
-				bestAttribute = i;
+			if (i != instances.classIndex()) {
+				double tempInfoGain = calcInfoGain(instances, i);
+				if (tempInfoGain < goodInfoGain) {
+					goodInfoGain = tempInfoGain;
+					bestAttribute = i;
+				}
 			}
 		}
 		return bestAttribute;
@@ -680,7 +740,6 @@ public class DecisionTree implements Classifier {
 			for (int i = 0; i < errors.length; i++){
 				extractedRule = rules.remove(i);
 				errors[i] = calcAvgError(validationSet);
-				System.out.println("this error: " + errors[i]);
 				rules.add(i, extractedRule);
 			}
 			// finds the index of the rule that has the minimal error rate
