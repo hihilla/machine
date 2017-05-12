@@ -52,19 +52,19 @@ public class MainHW2 {
 		treeWithNoPrunning.buildClassifier(trainingCancer);
 		System.out.println("no prunning avg error");
 		System.out.println(treeWithNoPrunning.calcAvgError(testingCancer));
-		
+		System.out.println();
 		DecisionTree treeWithChiPruning = new DecisionTree();
 		treeWithChiPruning.setPruningMode(PruningMode.Chi);
 		treeWithChiPruning.setValidation(validationCancer);
 		treeWithChiPruning.buildClassifier(trainingCancer);
 		System.out.println("chi prunning avg error");
 		System.out.println(treeWithChiPruning.calcAvgError(testingCancer));
-		
+		System.out.println();
 		DecisionTree treeWithRulePruning = new DecisionTree();
 		treeWithRulePruning.setPruningMode(PruningMode.Rule);
 		treeWithRulePruning.setValidation(validationCancer);
 		treeWithRulePruning.buildClassifier(trainingCancer);
-		
+		System.out.println();
 		double aveTrainErr = treeWithNoPrunning.calcAvgError(trainingCancer);
 		double aveTestErr = treeWithNoPrunning.calcAvgError(testingCancer);
 		int numOfRules = treeWithNoPrunning.getNumRules();
@@ -75,7 +75,7 @@ public class MainHW2 {
 							+ aveTestErr);
 		System.out.println("The amount of rules generated from the tree " 
 							+ numOfRules);
-		
+		System.out.println();
 		aveTrainErr = treeWithChiPruning.calcAvgError(trainingCancer);
 		aveTestErr = treeWithChiPruning.calcAvgError(testingCancer);
 		numOfRules = treeWithChiPruning.getNumRules();
@@ -88,7 +88,7 @@ public class MainHW2 {
 							+ aveTestErr);
 		System.out.println("The amount of rules generated from the tree " 
 				+ numOfRules);
-		
+		System.out.println();
 		aveTrainErr = treeWithRulePruning.calcAvgError(trainingCancer);
 		aveTestErr = treeWithRulePruning.calcAvgError(testingCancer);
 		numOfRules = treeWithRulePruning.getNumRules();
