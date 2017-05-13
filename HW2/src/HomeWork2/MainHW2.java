@@ -44,20 +44,20 @@ public class MainHW2 {
 
 		// builds Decision Trees each time with different pruning method
 
-		DecisionTree treeWithNoPrunning = new DecisionTree();
-		treeWithNoPrunning.setPruningMode(PruningMode.None);
-		treeWithNoPrunning.setValidation(validationCancer);
-		treeWithNoPrunning.buildClassifier(trainingCancer);
+//		DecisionTree treeWithNoPrunning = new DecisionTree();
+//		treeWithNoPrunning.setPruningMode(PruningMode.None);
+//		treeWithNoPrunning.setValidation(validationCancer);
+//		treeWithNoPrunning.buildClassifier(trainingCancer);
 		
-		double aveTrainErr = treeWithNoPrunning.calcAvgError(trainingCancer);
-		double aveTestErr = treeWithNoPrunning.calcAvgError(testingCancer);
-		int numOfRules = treeWithNoPrunning.getNumRules();
-		System.out.println("Decision Tree with No prunning");
-		System.out.println("The average train error of the decision tree is " + aveTrainErr);
-		System.out.println("The average test error of the decision tree is " + aveTestErr);
-		System.out.println("The amount of rules generated from the tree " + numOfRules);
-		System.out.println();
-		System.out.println();
+		double aveTrainErr;// = treeWithNoPrunning.calcAvgError(trainingCancer);
+		double aveTestErr;// = treeWithNoPrunning.calcAvgError(testingCancer);
+		int numOfRules;// = treeWithNoPrunning.getNumRules();
+//		System.out.println("Decision Tree with No prunning");
+//		System.out.println("The average train error of the decision tree is " + aveTrainErr);
+//		System.out.println("The average test error of the decision tree is " + aveTestErr);
+//		System.out.println("The amount of rules generated from the tree " + numOfRules);
+//		System.out.println();
+//		System.out.println();
 
 		DecisionTree treeWithChiPruning = new DecisionTree();
 		treeWithChiPruning.setPruningMode(PruningMode.Chi);
@@ -72,23 +72,23 @@ public class MainHW2 {
 		System.out.println("The average test error of the decision tree" + "with Chi pruning is " + aveTestErr);
 		System.out.println("The amount of rules generated from the tree " + numOfRules);
 		System.out.println();
-		treeWithChiPruning.printRules();;
+//		treeWithChiPruning.printRules();;
 		System.out.println();
 
-		DecisionTree treeWithRulePruning = new DecisionTree();
-		treeWithRulePruning.setPruningMode(PruningMode.Rule);
-		treeWithRulePruning.setValidation(validationCancer);
-		treeWithRulePruning.buildClassifier(trainingCancer);
-
-		aveTrainErr = treeWithRulePruning.calcAvgError(trainingCancer);
-		aveTestErr = treeWithRulePruning.calcAvgError(testingCancer);
-		numOfRules = treeWithRulePruning.getNumRules();
-		System.out.println("Decision Tree with Rule prunning");
-		System.out.println("The average train error of the decision tree " + "with Rule pruning is " + aveTrainErr);
-		System.out.println("The average test error of the decision tree" + "with Rule pruning is " + aveTestErr);
-		System.out.println("The amount of rules generated from the tree " + numOfRules);
-		System.out.println();
-//		treeWithRulePruning.printTree();
-		System.out.println();
+//		DecisionTree treeWithRulePruning = new DecisionTree();
+//		treeWithRulePruning.setPruningMode(PruningMode.Rule);
+//		treeWithRulePruning.setValidation(validationCancer);
+//		treeWithRulePruning.buildClassifier(trainingCancer);
+//
+//		aveTrainErr = treeWithRulePruning.calcAvgError(trainingCancer);
+//		aveTestErr = treeWithRulePruning.calcAvgError(testingCancer);
+//		numOfRules = treeWithRulePruning.getNumRules();
+//		System.out.println("Decision Tree with Rule prunning");
+//		System.out.println("The average train error of the decision tree " + "with Rule pruning is " + aveTrainErr);
+//		System.out.println("The average test error of the decision tree" + "with Rule pruning is " + aveTestErr);
+//		System.out.println("The amount of rules generated from the tree " + numOfRules);
+//		System.out.println();
+////		treeWithRulePruning.printTree();
+//		System.out.println();
 	}
 }
