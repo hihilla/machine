@@ -1,0 +1,14 @@
+Decision Tree with No pruning
+The average train error of the decision tree is 0.021621621621621623
+The average test error of the decision tree is 0.42
+The amount of rules generated from the tree 92
+
+Decision Tree with Chi pruning
+The average train error of the decision tree is 0.31351351351351353
+The average test error of the decision tree is 0.24
+The amount of rules generated from the tree 13
+
+Decision Tree with Rule pruning
+The average train error of the decision tree is 0.08648648648648649
+The average test error of the decision tree is 0.4
+The amount of rules generated from the tree 84
