@@ -57,7 +57,6 @@ public class MainHW2 {
 		System.out.println("The average test error of the decision tree is " + aveTestErr);
 		System.out.println("The amount of rules generated from the tree " + numOfRules);
 		System.out.println();
-//		treeWithNoPrunning.printTree();
 		System.out.println();
 
 		DecisionTree treeWithChiPruning = new DecisionTree();
@@ -73,7 +72,7 @@ public class MainHW2 {
 		System.out.println("The average test error of the decision tree" + "with Chi pruning is " + aveTestErr);
 		System.out.println("The amount of rules generated from the tree " + numOfRules);
 		System.out.println();
-//		treeWithChiPruning.printTree();
+		treeWithChiPruning.printRules();;
 		System.out.println();
 
 		DecisionTree treeWithRulePruning = new DecisionTree();

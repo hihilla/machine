@@ -16,6 +16,10 @@ class BasicRule {
 		this.attributeIndex = index;
 		this.attributeValue = value;
 	}
+	public BasicRule() {
+		this.attributeIndex = -1;
+		this.attributeValue = -1;
+	}
 }
 
 class Rule {
@@ -123,6 +127,9 @@ public class DecisionTree implements Classifier {
 		}
 
 		double[] probs = calcProbabilities(instances);
+		if (probs[0] == -1) {
+			return;
+		}
 		if (probs[1] == 0 || probs[1] == 1) {
 			// it is a leaf!!!
 			node.returnValue = probs[1];
@@ -132,7 +139,7 @@ public class DecisionTree implements Classifier {
 		} else {
 			// System.out.println(instances.size());
 			// node isn't a leaf, setting its return value
-			node.returnValue = Math.floor(probs[1]);
+			node.returnValue = Math.round(probs[1]);
 			node.nodeRule.returnValue = Math.floor(probs[1]);
 			if (calcEntropy(probs[0], probs[1]) == 0.0) {
 				rules.add(node.nodeRule);
@@ -142,7 +149,8 @@ public class DecisionTree implements Classifier {
 
 		// finding best attribute to split by
 		int bestAttribute = findBestAttribute(instances);
-		if (bestAttribute == -1 || calcInfoGain(instances, bestAttribute) == 0.0) {
+		
+		if (bestAttribute == -1) {
 			// no way of splitting! done!
 			rules.add(node.nodeRule);
 			return;
@@ -150,12 +158,12 @@ public class DecisionTree implements Classifier {
 		// if prunning mode is chi, check to prune
 		if (m_pruningMode == PruningMode.Chi) {
 			double chiSquare = calcChiSquare(instances, bestAttribute);
-			if (chiSquare <= CHI_SQUARE_LIMIT) {
+			if (chiSquare < CHI_SQUARE_LIMIT) {
 				// finish here!!
-				System.out.println("CHI!!:" + chiSquare);
 				rules.add(node.nodeRule);
 				return;
 			}
+			System.out.println(chiSquare);
 		}
 
 		// this node should be a root of its own sub tree
@@ -179,6 +187,7 @@ public class DecisionTree implements Classifier {
 			// index
 			BasicRule childBasicRule = new BasicRule(bestAttribute, i);
 			children[i] = new Node(node, bestAttribute);
+			children[i].nodeRule.basicRule = new ArrayList<BasicRule>(node.nodeRule.basicRule);
 			children[i].nodeRule.basicRule.add(childBasicRule);
 			if (splitInstances[i].size() == 0) {
 				children[i].returnValue = node.returnValue;
@@ -219,41 +228,20 @@ public class DecisionTree implements Classifier {
 		if (instances.size() == 0) {
 			return -1;
 		}
-		double[] infoGains = new double[instances.numAttributes()];
-		// calc info gain for each attribute
-		for (int i = 0; i < infoGains.length; i++) {
+		int numAttributes = instances.numAttributes();
+		int bestAttribute = -1;
+		double goodInfoGain = -1;
+		for (int i = 0; i < numAttributes; i++) {
 			if (i != instances.classIndex()) {
-				infoGains[i] = calcInfoGain(instances, i);
-			} else {
-				infoGains[i] = -1;
-			}
-		}
-		// find attribute index for which info gain is max
-		double maxInfoGain = 0;
-		int attIndex = 0;
-		for (int i = 0; i < infoGains.length; i++) {
-			if (infoGains[i] > maxInfoGain) {
-				maxInfoGain = infoGains[i];
-				attIndex = i;
+				double tempInfoGain = calcInfoGain(instances, i);
+				if (tempInfoGain > goodInfoGain) {
+					goodInfoGain = tempInfoGain;
+					bestAttribute = i;
+				}
 			}
 		}
 
-		return (maxInfoGain == 0) ? -1 : attIndex;
-
-		// int numAttributes = instances.numAttributes();
-		// int bestAttribute = -1;
-		// double goodInfoGain = -1;
-		// for (int i = 0; i < numAttributes; i++) {
-		// if (i != instances.classIndex()) {
-		// double tempInfoGain = calcInfoGain(instances, i);
-		// if (tempInfoGain > goodInfoGain) {
-		// goodInfoGain = tempInfoGain;
-		// bestAttribute = i;
-		// }
-		// }
-		// }
-		//
-		// return (goodInfoGain > 0) ? bestAttribute : -1;
+		return (goodInfoGain > 0) ? bestAttribute : -1;
 	}
 
 	/**
@@ -336,10 +324,10 @@ public class DecisionTree implements Classifier {
 
 	private double[] calcProbabilities(Instances instances) {
 		// number of possible classifications
-		int numValues = instances.numClasses();
+		int numClasses = instances.numClasses();
 		// number of instances in the instances set
 		int numInstances = instances.numInstances();
-		double[] probabilities = new double[numValues];
+		double[] probabilities = new double[numClasses];
 
 		// if there are no instances, returns meaningless array
 		if (numInstances < 1) {
@@ -375,94 +363,97 @@ public class DecisionTree implements Classifier {
 	 * @return The chi square score
 	 */
 	private double calcChiSquare(Instances instances, int attributeIndex) {
-		int numInstances = instances.numInstances();
+//		int numInstances = instances.numInstances();
+//		int numValues = instances.attribute(attributeIndex).numValues();
+//		int[] classApearences = new int[2];
+//		// for each possible value of attributeIndex - count each class
+//		int[] classApearences0 = new int[numValues]; 
+//		int[] classApearences1 = new int[numValues];
+//		int[] classApearencesForValues = new int [numValues];
+//		
+//		for (Instance inst : instances) {
+//			int attVal = (int) inst.value(attributeIndex);
+//			if (inst.classValue() == 0) {
+//				classApearences0[attVal]++;
+//			} else {
+//				classApearences1[attVal]++;
+//			}
+//			classApearencesForValues[attVal]++;
+//			classApearences[(int) inst.classValue()]++;
+//		}
+//		// probability for each class
+//		double p0 = classApearences[0] / (double) numInstances;
+//		double p1 = classApearences[1] / (double) numInstances;
+//		
+//		double e0 = classApearences[0] * p0;
+//		double e1 = classApearences[1] * p1;
+//		double chi = 0;
+//		for (int i = 0; i < numValues; i++) {
+//			double tempCalc0 = 0;
+//			if (e0 != 0) {
+//				tempCalc0 = Math.pow((classApearences0[i] - e0), 2) / e0;
+//			}
+//			double tempCalc1 = 0;
+//			if (e1 != 0) {
+//				tempCalc1 = Math.pow((classApearences1[i] - e1), 2) / e1;
+//			}
+//			chi += tempCalc0 + tempCalc1;
+//		}
+//
+//		return chi;
+		
+		// xj is the attribute at index j (attributeIndex)
 		int numValues = instances.attribute(attributeIndex).numValues();
-		int[] classApearences = new int[2];
-		// for each possible value of attributeIndex - count each class
-		int[] classApearences0 = new int[numValues]; 
-		int[] classApearences1 = new int[numValues];
-		int[] classApearencesForValues = new int [numValues];
-		
-		for (Instance inst : instances) {
-			int attVal = (int) inst.value(attributeIndex);
-			if (inst.classValue() == 0) {
-				classApearences0[attVal]++;
-			} else {
-				classApearences1[attVal]++;
-			}
-			classApearencesForValues[attVal]++;
-			classApearences[(int) inst.classValue()]++;
-		}
-		// probability for each class
-		double p0 = classApearences[0] / (double) numInstances;
-		double p1 = classApearences[1] / (double) numInstances;
-		
-		double e0 = classApearences[0] * p0;
-		double e1 = classApearences[1] * p1;
-		double chi = 0;
-		for (int i = 0; i < numValues; i++) {
-			double tempCalc0 = 0;
-			if (e0 != 0) {
-				tempCalc0 = Math.pow((classApearences0[i] - e0), 2) / e0;
-			}
-			double tempCalc1 = 0;
-			if (e1 != 0) {
-				tempCalc1 = Math.pow((classApearences1[i] - e1), 2) / e1;
-			}
-			chi += tempCalc0 + tempCalc1;
+		int numInstances = instances.numInstances();
+		// number of instances for which attribute value at (j) = val(f) [Df]
+		int df = 0;
+		// Positives: number of instances for which (attVal=f) and (Y = 1) [Pj]
+		int pf = 0;
+		// Negatives: number of instances for which (attVal=f) and (Y = 0) [Nj]
+		int nf = 0;
+		double E0, E1;
+		double chiSquare = 0;
+
+		// probability for classification (1/0)
+		double[] probabilitiesForClass = calcProbabilities(instances);
+		double Py0 = probabilitiesForClass[0];
+		double Py1 = probabilitiesForClass[1];
+		if (Py0 == -1) {
+			return 0;
 		}
 
-		return chi;
-		
-//		// xj is the attribute at index j (attributeIndex)
-//		int numValues = instances.attribute(attributeIndex).numValues();
-//		int numInstances = instances.numInstances();
-//		// number of instances for which attribute value at (j) = val(f) [Df]
-//		int df = 0;
-//		// Positives: number of instances for which (attVal=f) and (Y = 1) [Pj]
-//		int pf = 0;
-//		// Negatives: number of instances for which (attVal=f) and (Y = 0) [Nj]
-//		int nf = 0;
-//		double E0, E1;
-//		double chiSquare = 0;
-//
-//		// probability for classification (1/0)
-//		double[] probabilitiesForClass = calcProbabilities(instances);
-//		double Py0 = probabilitiesForClass[0];
-//		double Py1 = probabilitiesForClass[1];
-//
-//		// going over all possible values for attribute at attributeIndex
-//		for (double f = 0; f < numValues; f++) {
-//			df = pf = nf = 0;
-//			double tempCalc = 0;
-//			// calculating number of instances which j attribute value is f
-//			// calculate df, nf, pf
-//			for (int i = 0; i < numInstances; i++) {
-//				Instance curInstance = instances.instance(i);
-//				if (curInstance.value(attributeIndex) == (double) f) {
-//					df++;
-//					if (curInstance.classValue() == 0) {
-//						pf++;
-//					} else {
-//						nf++;
-//					}
-//				}
-//			}
-//			E0 = df * Py1;
-//			E1 = df * Py0;
-//
-//			// making sure not to divide by 0
-//			if (df != 0) {
-//				tempCalc = (Math.pow((pf - E0), 2) / E0) + (Math.pow((nf - E1), 2) / E1);
-//			} else {
-//				// happens when the number of instances where 𝑥𝑗=𝑓 [Df] is 0
-//				tempCalc = 0;
-//			}
-//			// adding calculation to chi square and zeros counters
-//			chiSquare += tempCalc;
-//
-//		}
-//		return chiSquare;
+		// going over all possible values for attribute at attributeIndex
+		for (double f = 0; f < numValues; f++) {
+			df = pf = nf = 0;
+			double tempCalc = 0;
+			// calculating number of instances which j attribute value is f
+			// calculate df, nf, pf
+			for (int i = 0; i < numInstances; i++) {
+				Instance curInstance = instances.instance(i);
+				if (curInstance.value(attributeIndex) == (double) f) {
+					df++;
+					if (curInstance.classValue() == 0) {
+						pf++;
+					} else {
+						nf++;
+					}
+				}
+			}
+			E0 = df * Py1;
+			E1 = df * Py0;
+
+			// making sure not to divide by 0
+			if (df != 0) {
+				tempCalc = (Math.pow((pf - E0), 2) / E0) + (Math.pow((nf - E1), 2) / E1);
+			} else {
+				// happens when the number of instances where 𝑥𝑗=𝑓 [Df] is 0
+				tempCalc = 0;
+			}
+			// adding calculation to chi square and zeros counters
+			chiSquare += tempCalc;
+
+		}
+		return chiSquare;
 	}
 
 	/**
@@ -474,7 +465,6 @@ public class DecisionTree implements Classifier {
 	 * improvement. PAY ATTENTION – for how you loops over the rule, how you
 	 * remove rules during this loop, how you decide to stop.
 	 * 
-	 * @param validationSet
 	 */
 	private void rulePrunning() {
 		// number of rules
@@ -738,6 +728,16 @@ public class DecisionTree implements Classifier {
 			for (Node child : node.children) {
 				recPrintTree(child, level + 1);
 			}
+		}
+	}
+	
+	public void printRules(){
+		for (Rule rule : rules) {
+			System.out.println();
+			for (BasicRule bRule : rule.basicRule) {
+				System.out.print(bRule.attributeIndex + " : " + bRule.attributeValue + " -> ");
+			}
+			System.out.print(rule.returnValue);
 		}
 	}
 }
