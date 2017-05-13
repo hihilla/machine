@@ -3,7 +3,6 @@
 import java.util.ArrayList;
 import java.util.List;
 
-import sun.util.resources.en.CurrencyNames_en_IN;
 import weka.classifiers.Classifier;
 import weka.core.Capabilities;
 import weka.core.Instance;
@@ -17,6 +16,7 @@ class BasicRule {
 		this.attributeIndex = index;
 		this.attributeValue = value;
 	}
+
 	public BasicRule() {
 		this.attributeIndex = -1;
 		this.attributeValue = -1;
@@ -43,7 +43,6 @@ class Node {
 	int attributeIndex = -1;
 	double returnValue;
 	Rule nodeRule = new Rule();
-	int id = 0;
 
 	// Construct an empty node
 	public Node() {
@@ -73,7 +72,7 @@ public class DecisionTree implements Classifier {
 	Instances validationSet;
 	private List<Rule> rules = new ArrayList<Rule>();
 	private final double CHI_SQUARE_LIMIT = 15.51;
-private int counter = 1;
+
 	@Override
 	public void buildClassifier(Instances arg0) throws Exception {
 		// build a tree - sets rootNode as its root
@@ -97,16 +96,16 @@ private int counter = 1;
 	/**
 	 * Builds the decision tree on given data set using a recursive algorithm
 	 * 
-	 * 
 	 * @param instances
 	 */
 	private Node buildTree(Instances instances) {
 		// generate empty node for root
 		Node node = new Node();
-		node.id = counter++;
+
 		if (instances.size() == 0) {
 			return node;
 		}
+		// create tree with node as root
 		recBuidTree(instances, node);
 		return node;
 	}
@@ -116,8 +115,8 @@ private int counter = 1;
 	 * instance. Finds best attribute to split according to, using info gain.
 	 * Splits given instances according to their value at bestAttribute index.
 	 * Stopping when there are no instances so split, they all have the same
-	 * classification (entropy 0 - pure split), or when prunning mode is chi,
-	 * and we reached the chi square limit.
+	 * classification (entropy 0 - pure split), or when pruning mode is chi, and
+	 * we reached the chi square limit.
 	 * 
 	 * @param instances
 	 *            - instances to split in the tree
@@ -125,7 +124,6 @@ private int counter = 1;
 	 *            - to be root of this tree
 	 */
 	private void recBuidTree(Instances instances, Node node) {
-//		System.out.println(node.id + " with: " + instances.size());
 		if (instances.size() == 0) {
 			return;
 		}
@@ -134,6 +132,7 @@ private int counter = 1;
 		if (probs[0] == -1) {
 			return;
 		}
+		// set return value according to probabilities of classes
 		if (probs[1] == 0 || probs[1] == 1) {
 			// it is a leaf!!!
 			node.returnValue = probs[1];
@@ -141,11 +140,11 @@ private int counter = 1;
 			rules.add(node.nodeRule);
 			return;
 		} else {
-			// System.out.println(instances.size());
 			// node isn't a leaf, setting its return value
 			node.returnValue = Math.round(probs[1]);
 			node.nodeRule.returnValue = Math.round(probs[1]);
 			if (calcEntropy(probs[0], probs[1]) == 0.0) {
+				// pure split. node should be a leaf!
 				rules.add(node.nodeRule);
 				return;
 			}
@@ -153,16 +152,15 @@ private int counter = 1;
 
 		// finding best attribute to split by
 		int bestAttribute = findBestAttribute(instances);
-		
+
 		if (bestAttribute == -1 || calcInfoGain(instances, bestAttribute) == 0.0) {
 			// no way of splitting! done!
 			rules.add(node.nodeRule);
 			return;
 		}
-		// if prunning mode is chi, check to prune
+		// if pruning mode is chi, check to prune
 		if (m_pruningMode == PruningMode.Chi) {
 			double chiSquare = calcChiSquare(instances, bestAttribute);
-			System.out.println(node.id+" with::: "+ chiSquare);
 			if (chiSquare < CHI_SQUARE_LIMIT) {
 				// finish here!!
 				rules.add(node.nodeRule);
@@ -172,9 +170,11 @@ private int counter = 1;
 
 		// this node should be a root of its own sub tree
 		node.attributeIndex = bestAttribute;
+		// creating its childrec
 		int numValues = instances.attribute(bestAttribute).numValues();
 		Node[] children = new Node[numValues];
 		node.children = children;
+
 		Instances[] splitInstances = new Instances[numValues];
 		// split instances according to their value at bestAttribute index
 		for (int i = 0; i < numValues; i++) {
@@ -191,7 +191,6 @@ private int counter = 1;
 			// index
 			BasicRule childBasicRule = new BasicRule(bestAttribute, i);
 			children[i] = new Node(node, bestAttribute);
-			children[i].id = counter++;
 			children[i].nodeRule.basicRule = new ArrayList<BasicRule>(node.nodeRule.basicRule);
 			children[i].nodeRule.basicRule.add(childBasicRule);
 			if (splitInstances[i].size() == 0) {
@@ -236,6 +235,7 @@ private int counter = 1;
 		int numAttributes = instances.numAttributes();
 		int bestAttribute = -1;
 		double goodInfoGain = -1;
+		// look for attribute that gives maximal info gain
 		for (int i = 0; i < numAttributes; i++) {
 			if (i != instances.classIndex()) {
 				double tempInfoGain = calcInfoGain(instances, i);
@@ -265,20 +265,20 @@ private int counter = 1;
 		}
 		int numInstances = instances.numInstances();
 		int numValues = instances.attribute(attributeIndex).numValues();
-		// count how many instances has classification 0, and how many has 1
-		double[] countClassifications = new double[2];
 		// count how many instances has each possible balue at attributeIndex
 		double[] countValuesOfAttribute = new double[numValues];
 		// for each possible value count appearences of classifications
 		double[][] countClassForValues = new double[numValues][2];
 		// calculate:
 		for (Instance inst : instances) {
-			countClassifications[(int) inst.classValue()]++;
 			countValuesOfAttribute[(int) inst.value(attributeIndex)]++;
 			countClassForValues[(int) inst.value(attributeIndex)][(int) inst.classValue()]++;
 		}
-		double p0 = countClassifications[0] / numInstances;
-		double p1 = countClassifications[1] / numInstances;
+		// probabilities for classes
+		double[] probs = calcProbabilities(instances);
+		double p0 = probs[0];
+		double p1 = probs[1];
+
 		double totalEntropy = calcEntropy(p0, p1);
 
 		// calculate conditional entropy
@@ -326,7 +326,6 @@ private int counter = 1;
 	 *            attribute to check probs according to its possible values
 	 * @return array of double with all possible probabilities
 	 */
-
 	private double[] calcProbabilities(Instances instances) {
 		// number of possible classifications
 		int numClasses = instances.numClasses();
@@ -374,8 +373,8 @@ private int counter = 1;
 		int[] valueAppearances = new int[numValues];
 		int[] class0ValAppearances = new int[numValues];
 		int[] class1ValAppearances = new int[numValues];
-		
-		// iterare instances: count classes, count possible values of 
+
+		// iterate instances: count classes, count possible values of
 		// attribute at attributeIndex, for each possible value count
 		// appearances of classes.
 		for (int i = 0; i < numInstances; i++) {
@@ -388,16 +387,16 @@ private int counter = 1;
 				class0ValAppearances[(int) curInstance.value(attributeIndex)]++;
 			}
 		}
-		
+
 		// probabilities for each class
 		double[] probs = calcProbabilities(instances);
-		
+
 		// calculating Chi Squares' Sigma:
 		double chiSquare = 0;
 		for (int i = 0; i < numValues; i++) {
 			double e0 = probs[0] * valueAppearances[i];
 			double e1 = probs[1] * valueAppearances[i];
-			
+
 			// if e0 or e1 is zero, don't calculate them!!
 			double temp0 = 0;
 			double temp1 = 0;
@@ -508,103 +507,62 @@ private int counter = 1;
 		}
 		// instance does not purely applies any Rule.
 		// need to fine a best matched rule.
-		
-//		int[] classApearences = new int[2];
-//		int maxConsecutiveConditions = 0;
-//		int bestRuleIndex = 0;
-//		// iterating all Rules
-//		for (int i = 0; i < numRules; i++) {
-//			int numConsecutiveConditions = 0;
-//			int numBasicRules = rules.get(i).basicRule.size();
-//			// iterating Basic Rules
-//			for (int j = 0; j < numBasicRules; j++) {
-//				BasicRule curBasRule = rules.get(i).basicRule.get(j);
-//				if (curBasRule.attributeValue == instance.value(curBasRule.attributeIndex)){
-//					// instance applies basir rule!
-//					numConsecutiveConditions++;
-//				} else {
-//					// instance dosn't apply basic rule!
-//					if (numConsecutiveConditions > maxConsecutiveConditions) {
-//						// new best rule
-//						classApearences[0] = classApearences[1] = 0;
-//						maxConsecutiveConditions = numConsecutiveConditions;
-//						bestRuleIndex = i;
-//						classApearences[(int) rules.get(i).returnValue]++;
-//					} else if (numConsecutiveConditions == maxConsecutiveConditions) {
-//						classApearences[(int) rules.get(i).returnValue]++;
-//					}
-//					break;
-//				}
-//			}
-//			// sanity check:
-//			if (numConsecutiveConditions == numBasicRules) {
-//				// instance applies entire rule. will not get here, but better
-//				// safe than sorry
-//				return rules.get(bestRuleIndex).returnValue;
-//			}
-//		}
-//		
-//		
-//	 	return (classApearences[0] > classApearences[1]) ? 0 : 1;
-	 	
-//		 if more then one rule has the same number of consecutive met
-//		 conditions
-		 // insert it to the suitableRules array and choose from there.
-		 Rule mostSuitableRule = this.rules.get(0);
-		 List<Rule> suitableRules = new ArrayList<Rule>();
-		 int largestNumOfConsecutiveConditions = 0;
-		 boolean moreThenOneRule = false;
-		 for (int i = 0; i < numRules; i++) {
-		 boolean applyRule = true;
-		 Rule curRule = this.rules.get(i);
-		 int curConsecutiveCondition = 0;
-		 numBasicRules = curRule.basicRule.size();
-		 for (int j = 0; j < numBasicRules && applyRule; j++) {
-		 BasicRule curBasicRule = curRule.basicRule.get(j);
-		 if (curBasicRule.attributeValue !=
-		 instance.value(curBasicRule.attributeIndex)) {
-		 applyRule = false; // Stop and continue to next Rule.
-		 } else {
-		 // count this Rules consecutive conditions
-		 curConsecutiveCondition++;
-		 }
-		 }
-		 if (curConsecutiveCondition > largestNumOfConsecutiveConditions) {
-		 // this Rule is better then last one!
-		 // saving this Rule and deleting previous data
-		 moreThenOneRule = false;
-		 largestNumOfConsecutiveConditions = curConsecutiveCondition;
-		 mostSuitableRule = curRule;
-		 suitableRules = new ArrayList<Rule>();
-		 } else if (curConsecutiveCondition ==
-		 largestNumOfConsecutiveConditions) {
-		 // same number of consecutive conditions as a previous Rule
-		 // adding this Rule to list of Rules
-		 moreThenOneRule = true;
-		 suitableRules.add(curRule);
-		 if (suitableRules.indexOf(mostSuitableRule) == -1) {
-		 suitableRules.add(mostSuitableRule);
-		 }
-		 }
-		 }
-		 if (moreThenOneRule) {
-		 double[] retValues = new
-		 double[instance.classAttribute().numValues()];
-		 int numOfSuitableRules = suitableRules.size();
-		 // System.out.println(numOfSuitableRules);
-		 // map return values of all rules
-		 for (int i = 0; i < numOfSuitableRules; i++) {
-		 double value = suitableRules.get(i).returnValue;
-		 retValues[(int) value]++;
-		 }
-		
-		 // return the most common return value
-		 return findMax(retValues);
-		 } else {
-		 // returning the rule that meets the largest number of consecutive
-		 // conditions
-		 return mostSuitableRule.returnValue;
-		 }
+
+		// if more then one rule has the same number of consecutive met
+		// conditions
+		// insert it to the suitableRules array and choose from there.
+		Rule mostSuitableRule = this.rules.get(0);
+		List<Rule> suitableRules = new ArrayList<Rule>();
+		int largestNumOfConsecutiveConditions = 0;
+		boolean moreThenOneRule = false;
+		for (int i = 0; i < numRules; i++) {
+			boolean applyRule = true;
+			Rule curRule = this.rules.get(i);
+			int curConsecutiveCondition = 0;
+			numBasicRules = curRule.basicRule.size();
+			for (int j = 0; j < numBasicRules && applyRule; j++) {
+				BasicRule curBasicRule = curRule.basicRule.get(j);
+				if (curBasicRule.attributeValue != instance.value(curBasicRule.attributeIndex)) {
+					applyRule = false; // Stop and continue to next Rule.
+				} else {
+					// count this Rules consecutive conditions
+					curConsecutiveCondition++;
+				}
+			}
+			if (curConsecutiveCondition > largestNumOfConsecutiveConditions) {
+				// this Rule is better then last one!
+				// saving this Rule and deleting previous data
+				moreThenOneRule = false;
+				largestNumOfConsecutiveConditions = curConsecutiveCondition;
+				mostSuitableRule = curRule;
+				suitableRules = new ArrayList<Rule>();
+			} else if (curConsecutiveCondition == largestNumOfConsecutiveConditions) {
+				// same number of consecutive conditions as a previous Rule
+				// adding this Rule to list of Rules
+				moreThenOneRule = true;
+				suitableRules.add(curRule);
+				if (suitableRules.indexOf(mostSuitableRule) == -1) {
+					suitableRules.add(mostSuitableRule);
+				}
+			}
+		}
+		if (moreThenOneRule) {
+			double[] retValues = new double[instance.classAttribute().numValues()];
+			int numOfSuitableRules = suitableRules.size();
+			// System.out.println(numOfSuitableRules);
+			// map return values of all rules
+			for (int i = 0; i < numOfSuitableRules; i++) {
+				double value = suitableRules.get(i).returnValue;
+				retValues[(int) value]++;
+			}
+
+			// return the most common return value
+			return findMax(retValues);
+		} else {
+			// returning the rule that meets the largest number of consecutive
+			// conditions
+			return mostSuitableRule.returnValue;
+		}
 	}
 
 	/**
@@ -644,56 +602,5 @@ private int counter = 1;
 	 */
 	public int getNumRules() {
 		return rules.size();
-	}
-
-	public void printTree() {
-		
-		recPrintTree(rootNode, 0);
-//		 System.out.print("nodeID:" + node.id + " ");
-//		 if (node.parent != null){
-//		 System.out.print("parent ID:" + node.parent.id + " ");
-//		 }
-//		System.out.print("Attribute " + node.attributeIndex + " ");
-//		System.out.print("returnVal " + node.returnValue + " ");
-//		// System.out.print("numInst " + node.nodesInstances.numInstances() + "
-//		// ");
-//		if (node.children == null || node.children.length == 0) {
-//			System.out.println("  I'm leaf   ");
-//			return;
-//		}
-//
-//		System.out.println();
-//		for (int i = 0; i < node.children.length; i++) {
-//			if (node.children[i] == null)
-//				continue;
-//			printTree(node.children[i]);
-//		}
-//		return;
-
-	}
-
-	private void recPrintTree(Node node, int level) {
-		for (int i = 0; i < level; i++) {
-			System.out.print(" - ");
-		}
-		System.out.println("> " + node.attributeIndex + " value: " + node.returnValue);
-		if (node.returnValue != 1.0 && node.returnValue != 0) {
-			System.out.println("HA?!");
-		}
-		if (node.children != null) {
-			for (Node child : node.children) {
-				recPrintTree(child, level + 1);
-			}
-		}
-	}
-	
-	public void printRules(){
-		for (Rule rule : rules) {
-			System.out.println();
-			for (BasicRule bRule : rule.basicRule) {
-				System.out.print(bRule.attributeIndex + " : " + bRule.attributeValue + " -> ");
-			}
-			System.out.print(rule.returnValue);
-		}
 	}
 }
